@@ -11,6 +11,8 @@
 #include <cassert>
 #include <memory>
 #include <bitset>
+#include "./compute_simd.h"
+
 #define distPeng(x,y) ((x-y)*(x-y))
 
 using namespace std;
@@ -224,14 +226,17 @@ double* TimeSeriesUtil::devBySegments(float* timeSeries, const int* segments, in
 }
 
 double TimeSeriesUtil::euclideanDist(const float* ts_1, const float* ts_2, int len) {
-    double sum = 0, dp;
-    for (int i = 0; i < len; i++) {
-        dp = ts_1[i] - ts_2[i];
-        sum += dp * dp;
-    }
-    return sum;
+    // 这里用 simd 加速
+    const size_t length = len;
+    return L2SqrSIMD16ExtAVX512Float(ts_1, ts_2, &length);
+    // double sum = 0, dp;
+    // for (int i = 0; i < len; i++) {
+    //     dp = ts_1[i] - ts_2[i];
+    //     sum += dp * dp;
+    // }
+    // return sum;
 }
-
+ 
 double TimeSeriesUtil::euclideanDist(const float* ts_1, const float* ts_2, int len, double bound) {
     double sum = 0, dp;
     for (int i = 0; i < len && sum < bound; i++) {
