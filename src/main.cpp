@@ -82,10 +82,10 @@ void DSTreeExpr(){
     Recall::progressiveSearchInMeomoryDSTree(root);
 }
 
-//void generateQueryFile(){
+void generateQueryFile(){
 //    string fn = "../data/generator/deep1b-96-100m.bin_le";
-//    FileUtil::generateQueryFile(fn, 2000);
-//}
+   FileUtil::generateQueryFile(Const::datafn, Const::queryfn, Const::query_num);
+}
 //void buildGraph(){
 //    auto s1 = chrono::system_clock::now();
 //    Graph g;
@@ -570,9 +570,8 @@ void test3(){
 //}
 
 void generateRandQuery(){
-    string fn = "/home/wzy/data/rand/rand-256-300m.bin";
-    RandDataGenerator::generate_random_timeseries(256, 300000000, fn.c_str());
-
+    // string fn = "/home/wzy/data/rand/rand-256-300m.bin";
+    RandDataGenerator::generate_random_timeseries(Const::tsLength, Const::series_num, Const::datafn.c_str());
 }
 
 void translateDNA(){
@@ -1014,11 +1013,18 @@ int main() {
     }
 
 {
-//generateRandQuery();
-//generateQueryFile();
-//generateGroundTruth();
-//generateGroundTruthDTW();
-//generateSax();
+
+// 生成数据
+generateRandQuery();
+generateQueryFile();
+generateSax();
+generateGroundTruth();
+// build
+buildInMemoryIndexFadas();
+// search
+progressiveSearchExprResInMemory();
+
+// generateGroundTruthDTW();
 //generatePaa();
 //testExactRes();
 //testExactRes2();

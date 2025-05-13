@@ -15,6 +15,7 @@
 #include <ctime>
 #include <cstring>
 #include <sys/stat.h>
+#include <cmath>
 
 bool FileUtil::checkFileExists(const char *name) {
     ifstream f(name);
@@ -177,24 +178,26 @@ vector<float>* FileUtil::readSeriesVector(FILE* f, int offset){
 void FileUtil::writeSeries(FILE* f, float *ts){
     fwrite(ts, sizeof(float), Const::tsLength, f);
 }
-#include <cmath>
-void FileUtil::generateQueryFile(const string& data_file, int num){
+
+void FileUtil::generateQueryFile(const string& data_file, const string& query_file, int num){
     FILE * inf = fopen(data_file.c_str(), "rb");
     int lastIndex= data_file.rfind(".bin");
-    string fn = data_file.substr(0, lastIndex) + "_query_in.bin";
-    FILE * outf = fopen(fn.c_str(), "wb");
+    FILE * outf = fopen(query_file.c_str(), "wb");
+    // 文件长度应该是 sizeof(float) * Const::tsLength * Const::series_num
+    // 具体可见 generateRandQuery 函数
     unordered_set<int>mask;
     int n;
     srand(time(nullptr));
     for(int i=0;i<num;++i) {
         while (true){
-           n = rand() % 100000000;
+           n = (rand() % Const::series_num);
            if(mask.find(n) == mask.end()){
                mask.insert(n);
                break;
            }
         }
         cout << n << ",";
+        n = 0;
         float *ts;
         while (true){
             ts = readSeriesOffset(inf, n);
@@ -202,7 +205,14 @@ void FileUtil::generateQueryFile(const string& data_file, int num){
         }
         cout << ts[0] << endl;
         fwrite(ts, sizeof(float), Const::tsLength, outf);
+        delete []ts;
     }
     fclose(inf);
     fclose(outf);
+}
+
+void FileUtil::generateQueryFile(const string& data_file, int num){
+    int lastIndex= data_file.rfind(".bin");
+    string query_file = data_file.substr(0, lastIndex) + "_query_in.bin";
+    return generateQueryFile(data_file, query_file, num);
 }

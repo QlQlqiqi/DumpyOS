@@ -210,13 +210,16 @@ int MathUtil::bitDiffNum(int i, int j){
     return res;
 }
 
-double MathUtil::errorRatio(vector<PqItemSeries*>&approx, vector<PqItemSeries*>&exact, int k){
-    double sum = 0;
-    for(int i=0;i<approx.size();++i){
-        if(approx[i]->dist == 0 && exact[i]->dist == 0) sum +=1;
-        else sum += (sqrt(approx[i]->dist) / sqrt(exact[i]->dist));
-    }
-    return sum / approx.size();
+double MathUtil::errorRatio(vector<PqItemSeries *> &approx,
+                            vector<PqItemSeries *> &exact, int k) {
+  double sum = 0;
+  for (int i = 0; i < approx.size(); ++i) {
+    if (approx[i]->dist == 0 && exact[i]->dist == 0)
+      sum += 1;
+    else
+      sum += (sqrt(approx[i]->dist) / sqrt(exact[i]->dist));
+  }
+  return sum / approx.size();
 }
 
 double MathUtil::invertedErrorRatio(vector<PqItemSeries *> &approx, vector<PqItemSeries *> &exact, int k) {

@@ -34,6 +34,7 @@ public:
     static vector<float> *readSeriesVector(FILE *f);
 
     static void generateQueryFile(const string& data_file, int num);
+    static void generateQueryFile(const string& data_file, const string& query_file, int num);
 
     static vector<float> *readSeriesVector(FILE *f, int offsetInc);
 

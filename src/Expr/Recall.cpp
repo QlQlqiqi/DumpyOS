@@ -525,7 +525,7 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
             error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
             inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
 //                cout << curRound << ":"<<recallNums[curRound] << endl;
-            cout << recallNums[curRound] << ",";
+            // cout << recallNums[curRound] << ",";
             fflush(stdout);
             free_heap(approxKnn);
             for(int i=0;i<k;++i)
@@ -534,7 +534,7 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
             delete[] query;
         }
 
-        cout << fixed  << endl;
+        // cout << fixed  << endl;
 //        for(int _:layers)   cout << _ << ",";
 //        cout << endl;
 //            for(double _:error_ratio)   cout << _ << ",";
@@ -553,7 +553,7 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
         total_duration /= (double ) maxExprRound;
         cout<<"Average duration is : " << total_duration << "us. "
             <<"And QPS = "<< 1000000.0 / total_duration <<endl;
-        for(int _:search_number)    cout << _ <<",";
+        // for(int _:search_number)    cout << _ <<",";
         cout << endl;
         rewind(f);
 

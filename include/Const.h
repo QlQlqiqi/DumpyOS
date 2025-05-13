@@ -9,6 +9,7 @@
 #include <cassert>
 #include <sys/time.h>
 #include "../include/Utils/INIReader.h"
+#include <limits>
 
 
 
@@ -213,7 +214,7 @@ public:
         vertexNum = 1 << segmentNum;
         dtw_window_size = dtw_window_percent * Const::tsLength;
         fbl_series_num = (fbl_size * 1024/ tsLengthBytes) * 1024 ;
-        int max_series_num = numeric_limits<unsigned>::max() / Const::tsLength;
+        int max_series_num = std::numeric_limits<int>::max() / Const::tsLength;
         fbl_series_num = fbl_series_num > max_series_num ? max_series_num: fbl_series_num;
         if(Const::method == "range")    method_code = 0;
         else if(Const::method == "stdev")   method_code =1;
@@ -233,7 +234,7 @@ public:
         if (r <= 1) {  // C(n, 0) = 1, C(n, 1) = n
             return r == 0 ? 1 : n;
         }
-        int limit = numeric_limits<int>::max() >> (31 - n);
+        int limit = std::numeric_limits<int>::max() >> (31 - n);
         int cnk = 0;
         for (int i = 3; i < limit; i++) {
             if (bitCount(i) == r) {
