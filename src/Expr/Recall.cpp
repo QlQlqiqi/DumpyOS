@@ -554,7 +554,7 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
         cout<<"Average duration is : " << total_duration << "us. "
             <<"And QPS = "<< 1000000.0 / total_duration <<endl;
         // for(int _:search_number)    cout << _ <<",";
-        cout << endl;
+        // cout << endl;
         rewind(f);
 
     }
@@ -805,6 +805,7 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
             int recallNums[maxExprRound];
             int search_number[maxExprRound];
             int layers[maxExprRound];
+            long duration[maxExprRound];
             double error_ratio[maxExprRound];
             double inv_error_ratio[maxExprRound];
             cout<<"------------------Experiment--------------------" << endl;
@@ -816,7 +817,9 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
                 c_nodes.clear();
                 _search_num = 0;
                 query = FileUtil::readSeries(f);
+                auto start = chrono::system_clock::now();
                 vector<PqItemSeries*> *approxKnn = IPGApproxSearcher::approxKnnSearchModel(root, query, k, threshold);
+                auto end = chrono::system_clock::now();
                 vector<float*>* exactKnn = getResult(resFile, curRound, k);
                 vector<PqItemSeries*> exactKnn2;
                 for(float *t: *exactKnn) {
@@ -825,11 +828,12 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
                 }
 
                 layers[curRound] = layer;
+                duration[curRound] = chrono::duration_cast<chrono::microseconds>(end - start).count();
                 recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
                 search_number[curRound] = _search_num;
                 error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
                 inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
-                cout << recallNums[curRound] << ",";
+                // cout << recallNums[curRound] << ",";
                 fflush(stdout);
 //                analyzePrintSaxIPG(approxKnn, exactKnn, query);
                 free_heap(approxKnn);
@@ -839,9 +843,9 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
                 delete[] query;
             }
             ++_k;
-            cout << fixed  << endl;
-            for(int _:layers)   cout << _ << ",";
-            cout << endl;
+            // cout << fixed  << endl;
+            // for(int _:layers)   cout << _ << ",";
+            // cout << endl;
 //            for(double _:error_ratio)   cout << _ << ",";
             int totalRecallNum = 0;
             for(int temp:recallNums)
@@ -854,6 +858,12 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
             for(double _:inv_error_ratio)   totalinvErrorRatio += _;
             cout<<"Average inv Error ratio is : " << totalinvErrorRatio / (float) (maxExprRound)<< endl;
 //            for(int _:search_number)    cout << _ <<",";
+            double total_duration = 0;
+            for (long _ : duration)
+              total_duration += _;
+            total_duration /= (double)maxExprRound;
+            cout << "Average duration is : " << total_duration << "us. "
+                 << "And QPS = " << 1000000.0 / total_duration << endl;
             cout << endl;
             rewind(f);
         }

@@ -1013,16 +1013,26 @@ int main() {
     }
 
 {
+  // 生成数据
+//   generateRandQuery();
+//   generateQueryFile();
+//   generateSax();
+    // generatePaa();
+//   generateGroundTruth();
 
-// 生成数据
-generateRandQuery();
-generateQueryFile();
-generateSax();
-generateGroundTruth();
-// build
-buildInMemoryIndexFadas();
-// search
-progressiveSearchExprResInMemory();
+  if (false) {
+    // fadas
+    // build
+    // buildInMemoryIndexFadas();
+    // search
+    progressiveSearchExprResInMemory();
+  }
+
+  if (true) {
+    // fadas fuzzy
+    // buildIPGFuzzy();
+    recallExprResIPGFuzzy();
+  }
 
 // generateGroundTruthDTW();
 //generatePaa();
