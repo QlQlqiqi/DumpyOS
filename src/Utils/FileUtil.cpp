@@ -109,6 +109,11 @@ void FileUtil::renameFile(const string &old_file, const string &new_file){
     rename(old_file.c_str(), new_file.c_str());
 }
 
+float * FileUtil::readSeries(FILE* f, float *ts){
+    fread(ts, sizeof(float), Const::tsLength, f);
+    return ts;
+}
+
 float * FileUtil::readSeries(FILE* f){
     auto *ts = new float[Const::tsLength];
     fread(ts, sizeof(float), Const::tsLength, f);

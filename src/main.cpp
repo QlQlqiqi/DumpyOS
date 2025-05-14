@@ -480,6 +480,16 @@ void recallExprResIPG(){
 void recallExprResIPGFuzzy(){
     IPGNode* root = IPGNode::loadFromDisk(Const::saxfn, getIdxfnFuzzy());
     IPGNode::rowDataFileName = Const::datafn;
+    if (!Const::read_file_while_search) {
+      // 提前读出 offset 对应的数据内容
+      FILE *f = fopen(IPGNode::rowDataFileName.c_str(), "rb");
+      IPGNode::ts_data_.resize(Const::series_num);
+      for (auto &ts : IPGNode::ts_data_) {
+        ts.resize(Const::tsLengthBytes);
+        FileUtil::readSeries(f, ts.data());
+      }
+      fclose(f);
+    }
     Recall::doExprWithResFADASNonMat(root, Const::queryfn, Const::resfn);
 }
 

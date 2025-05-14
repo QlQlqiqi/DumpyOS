@@ -39,6 +39,7 @@ int*** IPGNode::combines = readCombines();
 unsigned short*IPGNode::saxes = nullptr;
 float *IPGNode::paas = nullptr;
 string IPGNode::rowDataFileName = "";
+std::vector<std::vector<float>> IPGNode::ts_data_;
 const int combine_num[] = {0, 16, 120, 560, 1820, 4368, 8008, 11440, 12870, 11440, 8008, 4368, 1820, 560, 12, 16};
 static int fuzzy_num = 0;
 
@@ -1986,13 +1987,21 @@ extern int _search_num;
 void IPGNode::exactSearchKnn(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap) const {
     assert(isLeafNode());
     double bsf = heap.size() < k? numeric_limits<double>::max() : heap[0]->dist;
-    FILE *f = fopen(rowDataFileName.c_str(), "rb");
+    FILE *f = nullptr;
+    if (Const::read_file_while_search) {
+      f = fopen(rowDataFileName.c_str(), "rb");
+    }
     float *ts;
     for(int offset:offsets){
         ++_search_num;
-        fseek(f, (long)offset * Const::tsLengthBytes, SEEK_SET);
         ts = new float[Const::tsLength];
-        fread(ts, sizeof(float), Const::tsLength, f);
+        if (Const::read_file_while_search) {
+          fseek(f, (long)offset * Const::tsLengthBytes, SEEK_SET);
+          fread(ts, sizeof(float), Const::tsLength, f);
+        }else {
+          memcpy(ts, ts_data_.at(offset).data(),
+                 sizeof(float) * Const::tsLength);
+        }
         double dist = TimeSeriesUtil::euclideanDist(queryTs->ts, ts, Const::tsLength);
         if(heap.size() < k){
             heap.push_back(new PqItemSeries(ts, dist, true));
@@ -2007,7 +2016,9 @@ void IPGNode::exactSearchKnn(int k, TimeSeries *queryTs, vector<PqItemSeries *> 
 
         if(heap.size() >= k)    bsf = heap[0]->dist;
     }
-    fclose(f);
+    if (Const::read_file_while_search) {
+      fclose(f);
+    }
 }
 
 IPGNode* IPGNode::route(const unsigned short *asax) const{

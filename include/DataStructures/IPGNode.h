@@ -58,6 +58,7 @@ public:
     static float *paas;
     static int ***combines;
     static string rowDataFileName;
+    static std::vector<std::vector<float>> ts_data_;
     unsigned short sax[Const::segmentNum]{};
     float paa_mu[Const::segmentNum]{}, paa_max[Const::segmentNum]{}, paa_min[Const::segmentNum]{}, paa_sigma[Const::segmentNum]{},
             paa_dist[Const::segmentNum]{}, paa_up_min[Const::segmentNum]{}, paa_below_max[Const::segmentNum]{},

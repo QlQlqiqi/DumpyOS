@@ -22,6 +22,7 @@ public:
 //
 //    static void doExprWithRes(Graph *g);
 
+    static void getResult(const string &fn, int queryNo, int k, std::vector<std::vector<float>> &res);
 
     static vector<float *> *getResult(const string &fn, int queryNo, int k);
 

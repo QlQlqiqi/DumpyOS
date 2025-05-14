@@ -140,6 +140,21 @@ void reorder_query(float * query_ts, float * query_ts_reordered, int * query_ord
 //    fclose(f);
 //}
 
+void Recall::getResult(const string &fn, int queryNo, int k,
+                       std::vector<std::vector<float>> &res) {
+  // auto * res = new vector<float*>(k);
+  res.resize(k);
+  FILE *f = fopen(fn.c_str(), "rb");
+  long off = (long)queryNo * Const::tsLengthBytes * Const::maxK;
+  fseek(f, off, SEEK_SET);
+  for (int i = 0; i < k; ++i) {
+    res[i].resize(Const::tsLength);
+    ;
+    fread(res[i].data(), sizeof(float), Const::tsLength, f);
+  }
+  fclose(f);
+}
+
 vector<float*>* Recall::getResult(const string& fn, int queryNo, int k){
     auto * res = new vector<float*>(k);
     FILE *f= fopen(fn.c_str(), "rb");
@@ -494,8 +509,18 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
     FILE *f = fopen(Const::queryfn.c_str(), "rb");
     long offset = 0;
     fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+    // 提前读取所有所的 querys
+    std::cout << "--- now we choose to read all querys from disk in advance, "
+              << "instead of reading while executing knn search\n";
+    std::vector<std::vector<float>> querys(Const::query_num,
+                                           std::vector<float>(Const::tsLength));
+    for (int i = 0; i < Const::query_num; i++) {
+      FileUtil::readSeries(f, querys[i].data());
+    }
+    fclose(f);
 
     for(float threshold:thresholds){
+        size_t query_idx = 0;
         int recallNums[maxExprRound];
         int search_number[maxExprRound];
         int layers[maxExprRound];
@@ -508,7 +533,8 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
         cout<<"threshold: " << s_num<< endl;
 
         for(int curRound = 0; curRound < maxExprRound; ++curRound){
-            query = FileUtil::readSeries(f);
+            // query = FileUtil::readSeries(f);
+            query = querys.at(query_idx++).data();
             actual_node_number = s_num;
             auto start = chrono::system_clock::now();
             vector<PqItemSeries*> *approxKnn = TardisApproxSearch::tardisApproxKnnSearch(root, query, k, s_num);
@@ -526,12 +552,12 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
             inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
 //                cout << curRound << ":"<<recallNums[curRound] << endl;
             // cout << recallNums[curRound] << ",";
-            fflush(stdout);
+            // fflush(stdout);
             free_heap(approxKnn);
             for(int i=0;i<k;++i)
                 delete[] (*exactKnn)[i];
             delete exactKnn;
-            delete[] query;
+            // delete[] query;
         }
 
         // cout << fixed  << endl;
@@ -555,11 +581,11 @@ void Recall::progressiveSearchInMeomoryFADAS(TardisTreeNode *root, vector<vector
             <<"And QPS = "<< 1000000.0 / total_duration <<endl;
         // for(int _:search_number)    cout << _ <<",";
         // cout << endl;
-        rewind(f);
+        // rewind(f);
 
     }
 
-    fclose(f);
+    // fclose(f);
 }
 
 void Recall::progressiveSearchInMeomoryDSTree(DSTreeNode *root) {
@@ -799,9 +825,29 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
     int thresholds[]{10000};
     float *query;
     FILE *f = fopen(queryFile.c_str(), "rb");
+    // 提前读取所有所的 querys
+    std::cout << "--- now we choose to read all querys from disk in advance, "
+              << "instead of reading while executing knn search\n";
+    std::vector<std::vector<float>> querys(Const::query_num,
+                                           std::vector<float>(Const::tsLength));
+    for (int i = 0; i < Const::query_num; i++) {
+      FileUtil::readSeries(f, querys[i].data());
+    }
+    fclose(f);
+    // printf("now we choose to pre-read exact res\n");
+    // std::vector<std::vector<std::vector<std::vector<float>>>> exact_res;
+    // exact_res.resize(sizeof(ks) / sizeof(ks[0]));
+    // for (auto k : ks) {
+    //   exact_res[k].resize(maxExprRound);
+    //   for (int curRound = 0; curRound < maxExprRound; ++curRound) {
+    //     getResult(resFile, curRound, k, exact_res[k][curRound]);
+    //   }
+    // }
+
     for(int threshold:thresholds){
         int _k = 0;
         for(int k:ks){
+            size_t query_idx = 0;
             int recallNums[maxExprRound];
             int search_number[maxExprRound];
             int layers[maxExprRound];
@@ -816,47 +862,48 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
                 _search_num = 0;
-                query = FileUtil::readSeries(f);
+                // query = FileUtil::readSeries(f);
+                query = querys.at(query_idx++).data();
                 auto start = chrono::system_clock::now();
                 vector<PqItemSeries*> *approxKnn = IPGApproxSearcher::approxKnnSearchModel(root, query, k, threshold);
                 auto end = chrono::system_clock::now();
-                vector<float*>* exactKnn = getResult(resFile, curRound, k);
-                vector<PqItemSeries*> exactKnn2;
-                for(float *t: *exactKnn) {
-//                    cout << TimeSeriesUtil::timeSeries2Line(t)<<endl;
-                    exactKnn2.push_back(new PqItemSeries(t, query));
-                }
+//                 vector<float*>* exactKnn = getResult(resFile, curRound, k);
+//                 vector<PqItemSeries*> exactKnn2;
+//                 for(float *t: *exactKnn) {
+// //                    cout << TimeSeriesUtil::timeSeries2Line(t)<<endl;
+//                     exactKnn2.push_back(new PqItemSeries(t, query));
+//                 }
 
                 layers[curRound] = layer;
                 duration[curRound] = chrono::duration_cast<chrono::microseconds>(end - start).count();
-                recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
-                search_number[curRound] = _search_num;
-                error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
-                inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
+                // recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
+                // search_number[curRound] = _search_num;
+                // error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
+                // inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
                 // cout << recallNums[curRound] << ",";
-                fflush(stdout);
+                // fflush(stdout);
 //                analyzePrintSaxIPG(approxKnn, exactKnn, query);
                 free_heap(approxKnn);
-                for(int i=0;i<k;++i)
-                    delete[] (*exactKnn)[i];
-                delete exactKnn;
-                delete[] query;
+                // for(int i=0;i<k;++i)
+                //     delete[] (*exactKnn)[i];
+                // delete exactKnn;
+                // delete[] query;
             }
             ++_k;
             // cout << fixed  << endl;
             // for(int _:layers)   cout << _ << ",";
             // cout << endl;
 //            for(double _:error_ratio)   cout << _ << ",";
-            int totalRecallNum = 0;
-            for(int temp:recallNums)
-                totalRecallNum += temp;
-            cout<<"\nAverage Recall rate is : " << (float)totalRecallNum / (float) (maxExprRound * k)<< endl;
-            double totalErrorRatio = 0;
-            for(double _:error_ratio)   totalErrorRatio += _;
-            cout<<"Average Error ratio is : " << totalErrorRatio / (float) (maxExprRound)<< endl;
-            double totalinvErrorRatio = 0;
-            for(double _:inv_error_ratio)   totalinvErrorRatio += _;
-            cout<<"Average inv Error ratio is : " << totalinvErrorRatio / (float) (maxExprRound)<< endl;
+            // int totalRecallNum = 0;
+            // for(int temp:recallNums)
+            //     totalRecallNum += temp;
+            // cout<<"\nAverage Recall rate is : " << (float)totalRecallNum / (float) (maxExprRound * k)<< endl;
+            // double totalErrorRatio = 0;
+            // for(double _:error_ratio)   totalErrorRatio += _;
+            // cout<<"Average Error ratio is : " << totalErrorRatio / (float) (maxExprRound)<< endl;
+            // double totalinvErrorRatio = 0;
+            // for(double _:inv_error_ratio)   totalinvErrorRatio += _;
+            // cout<<"Average inv Error ratio is : " << totalinvErrorRatio / (float) (maxExprRound)<< endl;
 //            for(int _:search_number)    cout << _ <<",";
             double total_duration = 0;
             for (long _ : duration)
@@ -865,7 +912,7 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
             cout << "Average duration is : " << total_duration << "us. "
                  << "And QPS = " << 1000000.0 / total_duration << endl;
             cout << endl;
-            rewind(f);
+            // rewind(f);
         }
 
     }
@@ -874,7 +921,7 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
     //    cout << "middle: " << approxSearchUnits[1] << " series, cost " << approxSearchTimeDetails[1] << " us. "<< endl;
     //    cout << "big: " << approxSearchUnits[2] << " series, cost " << approxSearchTimeDetails[2] << " us. "<< endl;
     //    cout << "huge: " << approxSearchUnits[3] << " series, cost " << approxSearchTimeDetails[3] << " us. "<< endl;
-    fclose(f);
+    // fclose(f);
 }
 
 void Recall::doExprWithResIPGDynamicPaaMu(IPGNode *root, const string &queryFile, const string &resFile) {

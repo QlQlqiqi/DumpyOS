@@ -21,6 +21,8 @@ public:
 
     static void getFiles(const string& path, vector<string>& files );
 
+    static float *readSeries(FILE *f, float *ts);
+
     static float *readSeries(FILE *f);
 
     static void writeSeries(FILE *f, float *ts);
