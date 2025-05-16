@@ -170,7 +170,7 @@ void ExactSearcher::groundTruthKnnSearch(const string &fn, const string &queryfn
     fread(queries, sizeof(float ), (long)query_num * Const::tsLength, qf);
     fclose(qf);
 
-    cout << "k:" << k <<endl;
+    // cout << "k:" << k <<endl;
     FILE *f = fopen(fn.c_str(), "rb");
     if(series_num == -1)
         series_num = FileUtil::getFileSize(fn.c_str()) / Const::tsLengthBytes;
@@ -183,7 +183,7 @@ void ExactSearcher::groundTruthKnnSearch(const string &fn, const string &queryfn
 
 
     while (cur < series_num){
-        cout << cur <<endl;
+        // cout << cur <<endl;
         fread(ts, sizeof(float ), Const::tsLength * bulk, f);
 
         for(long i=0;i<bulk;++i) {
@@ -219,7 +219,7 @@ void ExactSearcher::groundTruthKnnSearch(const string &fn, const string &queryfn
         sort(heaps[j].begin(),  heaps[j].end(), TempSeriesMaxHeap());
     f = fopen(output.c_str(), "wb");
     for(int j=0; j < query_num; ++j){
-        cout << j << ": " << heaps[j].size() << endl;
+        // cout << j << ": " << heaps[j].size() << endl;
         for(auto *tmps:heaps[j]){
             fwrite(tmps->ts, sizeof(float ), Const::tsLength, f);
         }

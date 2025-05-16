@@ -1366,11 +1366,11 @@ void SaxUtil::generateSaxFile(const string &fn , const string &output){
     FILE *f = fopen(fn.c_str(), "rb");
     FILE *of = fopen(output.c_str(), "wb");
     for(int i=0;i<num;++i){
-        if(i % 1000000 == 0)    cout << i << endl;
+        // if(i % 1000000 == 0)    cout << i << endl;
         fread(ts, sizeof(float ), Const::tsLength, f);
         if(isnan(ts[0])){
             for(auto &t:sax)    t = 0;
-            cout << i << "," <<endl;
+            // cout << i << "," <<endl;
         }
         else    saxFromTs(ts, sax, Const::tsLengthPerSegment, Const::segmentNum, Const::cardinality);
         fwrite(sax, sizeof(unsigned short), Const::segmentNum, of);
@@ -1390,11 +1390,11 @@ void SaxUtil::generatePaaFile(const string &fn, const string &output) {
     float paa_max[Const::segmentNum];
     fill_n(paa_max, Const::segmentNum, 0);
     for(int i=0;i<num;++i){
-        if(i % 1000000 == 0)    cout << i << endl;
+        // if(i % 1000000 == 0)    cout << i << endl;
         fread(ts, sizeof(float ), Const::tsLength, f);
         if(isnan(ts[0])){
             for(auto &t:paa)    t = 0;
-            cout << i << "," <<endl;
+            // cout << i << "," <<endl;
         }
         else    paaFromTs(ts, paa, Const::tsLengthPerSegment, Const::segmentNum);
         for(int j=0;j<Const::segmentNum;++j)

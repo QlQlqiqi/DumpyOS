@@ -1024,11 +1024,11 @@ int main() {
 
 {
   // 生成数据
-//   generateRandQuery();
-//   generateQueryFile();
-//   generateSax();
-    // generatePaa();
-//   generateGroundTruth();
+  generateRandQuery();
+  generateQueryFile();
+  generateSax();
+  generatePaa();
+  generateGroundTruth();
 
   if (false) {
     // fadas
@@ -1040,7 +1040,7 @@ int main() {
 
   if (true) {
     // fadas fuzzy
-    // buildIPGFuzzy();
+    buildIPGFuzzy();
     recallExprResIPGFuzzy();
   }
 

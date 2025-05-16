@@ -201,14 +201,14 @@ void FileUtil::generateQueryFile(const string& data_file, const string& query_fi
                break;
            }
         }
-        cout << n << ",";
+        // cout << n << ",";
         n = 0;
         float *ts;
         while (true){
             ts = readSeriesOffset(inf, n);
             if(!isnan(ts[0])) break;
         }
-        cout << ts[0] << endl;
+        // cout << ts[0] << endl;
         fwrite(ts, sizeof(float), Const::tsLength, outf);
         delete []ts;
     }
