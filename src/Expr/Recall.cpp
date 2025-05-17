@@ -15,6 +15,7 @@
 #include "../../include/Searchers/FADASSearcher.h"
 #include "../../include/Searchers/DSTreeApproxSearcher.h"
 #include "../../include/Const.h"
+#include "../../include/MyTimer.h"
 #include "../../include/TAR/TARGNode.h"
 #include <string>
 //#include <gperftools/profiler.h>
@@ -858,15 +859,18 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
             cout<<"k: " << k << endl;
             cout<<"threshold: " << threshold<< endl;
 
+            auto search_loop_start = MyTimer::Now();
+            MyTimer::search_timecount_us_ = 0;
+            MyTimer::exact_search_timecount_us_ = 0;
             for(int curRound = 0; curRound < maxExprRound; ++curRound){
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
                 _search_num = 0;
                 // query = FileUtil::readSeries(f);
                 query = querys.at(query_idx++).data();
-                auto start = chrono::system_clock::now();
+                auto start = MyTimer::Now();
                 vector<PqItemSeries*> *approxKnn = IPGApproxSearcher::approxKnnSearchModel(root, query, k, threshold);
-                auto end = chrono::system_clock::now();
+                auto end = MyTimer::Now();
 //                 vector<float*>* exactKnn = getResult(resFile, curRound, k);
 //                 vector<PqItemSeries*> exactKnn2;
 //                 for(float *t: *exactKnn) {
@@ -890,6 +894,17 @@ void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, co
                 // delete[] query;
             }
             ++_k;
+
+            auto search_loop_duration =
+                MyTimer::Duration<std::chrono::microseconds>(search_loop_start,
+                                                             MyTimer::Now());
+            MyTimer::search_timecount_us_ = search_loop_duration.count();
+
+            printf("total time per search: %zuus\n",
+                   MyTimer::search_timecount_us_ / maxExprRound);
+            printf("exact time per search: %zuus\n",
+                   MyTimer::exact_search_timecount_us_ / maxExprRound);
+
             // cout << fixed  << endl;
             // for(int _:layers)   cout << _ << ",";
             // cout << endl;

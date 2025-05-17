@@ -9,6 +9,7 @@
 #include "../../include/DataStructures/TimeSeries.h"
 #include "../../include/DataStructures/IPGPartition.h"
 #include "../../include/Const.h"
+#include "../../include/MyTimer.h"
 #include <iostream>
 #include <set>
 #include <algorithm>
@@ -224,7 +225,7 @@ IPGNode * IPGNode::BuildIPGFuzzy(string &saxfn, string &paafn, vector<vector<int
     cout << "build index finished." << endl;
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-    printf("build hnsw for %zums\n", duration.count());
+    printf("build IPGFuzzy for %zums\n", duration.count());
 
     return root;
 }
@@ -1990,6 +1991,7 @@ vector<OffsetDist *> *IPGNode::preparePqUsingSaxLbNew(double bsf, const float *q
 
 extern int _search_num;
 void IPGNode::exactSearchKnn(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap) const {
+    auto start_time = MyTimer::Now();
     assert(isLeafNode());
     double bsf = heap.size() < k? numeric_limits<double>::max() : heap[0]->dist;
     FILE *f = nullptr;
@@ -2024,6 +2026,9 @@ void IPGNode::exactSearchKnn(int k, TimeSeries *queryTs, vector<PqItemSeries *> 
     if (Const::read_file_while_search) {
       fclose(f);
     }
+    MyTimer::exact_search_timecount_us_ +=
+        MyTimer::Duration<std::chrono::microseconds>(start_time, MyTimer::Now())
+            .count();
 }
 
 IPGNode* IPGNode::route(const unsigned short *asax) const{
