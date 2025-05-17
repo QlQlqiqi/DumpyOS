@@ -13,6 +13,7 @@
 #include <set>
 #include <algorithm>
 #include <fstream>
+#include <chrono>
 #include <cmath>
 const int IPGNode::power_2[]{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536};
 const int IPGNode::mask_16[]{
@@ -183,6 +184,7 @@ void IPGNode::growIPGIndex(const string &method) {
 IPGNode * IPGNode::BuildIPGFuzzy(string &saxfn, string &paafn, vector<vector<int>> *g, const string &method) {
     int series_num = loadSax(saxfn);
     loadPaa(paafn);
+    auto start = std::chrono::high_resolution_clock::now();
     auto* root = new IPGNode();
     root->children = new unordered_map<int, IPGNode*>();
     root->size = series_num;
@@ -220,6 +222,9 @@ IPGNode * IPGNode::BuildIPGFuzzy(string &saxfn, string &paafn, vector<vector<int
 
     cout << "total replica number = " << fuzzy_num << endl;
     cout << "build index finished." << endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+    printf("build hnsw for %zums\n", duration.count());
 
     return root;
 }
