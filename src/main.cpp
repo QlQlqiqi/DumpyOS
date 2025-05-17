@@ -1024,7 +1024,7 @@ int main() {
 
 {
   // 生成数据
-  generateRandQuery();
+//   generateRandQuery();
   generateQueryFile();
   generateSax();
   generatePaa();
