@@ -1,7 +1,7 @@
 cmake-build-debug/
 cmake-build-release/
 data
-combines
+# combines
 bin
 fuzzy_index
 index
