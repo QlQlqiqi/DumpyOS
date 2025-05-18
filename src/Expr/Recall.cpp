@@ -819,7 +819,7 @@ void analyzePrintSaxIPG(vector<PqItemSeries*> *approxKnn, vector<float*>* exactK
 
 extern int _search_num = 0;
 void Recall::doExprWithResFADASNonMat(IPGNode *root, const string &queryFile, const string &resFile) {
-    int maxExprRound = 200;
+    int maxExprRound = Const::query_num;
     cout << "result file is " << resFile <<endl;
     int ks[]{1,3,5,10,25,50};
 //    int ks[]{1};
@@ -1026,9 +1026,21 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     int thresholds[]{10000};
     cout << fixed  << setprecision(3) << endl;
     float *query;
-    FILE *f = fopen(Const::queryfn.c_str(), "rb");
+    FILE *f = nullptr;
     long offset = 0;
-    fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+    std::vector<std::vector<float>> querys;
+    if (!Const::read_file_while_search) {
+      f = fopen(Const::queryfn.c_str(), "rb");
+      fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+      querys.resize(Const::query_num, std::vector<float>(Const::tsLength));
+      for (auto &query : querys) {
+        FileUtil::readSeries(f, query.data());
+      }
+      fclose(f);
+    } else {
+      f = fopen(Const::queryfn.c_str(), "rb");
+      fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+    }
     for(int threshold:thresholds){
         int _k = 0;
         for(int k:ks){
@@ -1046,7 +1058,11 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
                 _search_num = 0;
-                query = FileUtil::readSeries(f);
+                if (Const::read_file_while_search) {
+                  query = FileUtil::readSeries(f);
+                } else {
+                  query = querys[curRound].data();
+                }
                 reorder_query(query, query_reordered, ordering);
                 auto start = chrono::system_clock::now();
                 vector<PqItemSeries*> *approxKnn = FADASSearcher::approxSearch(root, query, k, g, index_dir, query_reordered,
@@ -1066,18 +1082,20 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
                 inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
 //                cout << curRound << ":"<<recallNums[curRound] << endl;
-                cout << recallNums[curRound] << "," ;
+                // cout << recallNums[curRound] << "," ;
                 fflush(stdout);
                 free_heap(approxKnn);
                 for(int i=0;i<k;++i)
                     delete[] (*exactKnn)[i];
                 delete exactKnn;
-                delete[] query;
+                if (Const::read_file_while_search) {
+                  delete[] query;
+                }
             }
             ++_k;
-            cout << endl;
-            for(int _:layers)   cout << _ << ",";
-            cout << endl;
+            // cout << endl;
+            // for(int _:layers)   cout << _ << ",";
+            // cout << endl;
 //            for(double _:error_ratio)   cout << _ << ",";
             int totalRecallNum = 0;
             for(int temp:recallNums)
@@ -1094,13 +1112,17 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
             total_duration /= (double ) maxExprRound;
             cout<<"Average duration is : " << total_duration << "us. "
               <<"And QPS = "<< 1000000.0 / total_duration <<endl;
-            for(int _:search_number)    cout << _ <<",";
-            cout << endl;
-            rewind(f);
+            // for(int _:search_number)    cout << _ <<",";
+            // cout << endl;
+            if (Const::read_file_while_search) {
+              rewind(f);
+            }
         }
     }
 
-    fclose(f);
+    if (Const::read_file_while_search) {
+      fclose(f);
+    }
 }
 
 void Recall::ngSearchDumpy(FADASNode *root, vector<vector<int>> *g) {

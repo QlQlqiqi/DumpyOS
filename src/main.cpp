@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <cstdio>
 #include <fstream>
@@ -827,8 +828,20 @@ void statIndexFADASFuzzy(){
     root->getIndexStats();
 }
 
-int main() {
+int main(int argc, char **argv) {
     Const::readConfig();
+    if(argc == 2) {
+        if(strcmp(argv[1], "build") == 0) {
+            Const::ops = 0;
+        } else if(strcmp(argv[1], "search") == 0) {
+            Const::ops = 1;
+        }
+    }
+
+    // generateQueryFile();
+    // generateSax();
+    // generatePaa();
+    // generateGroundTruth();
 
     switch (Const::index) {
         case 0:
@@ -916,8 +929,15 @@ int main() {
             exit(0);
         case 2:
             if(Const::ops == 0){
-                if(Const::materialized == 0)    buildIPGFuzzy();
-                else buildFADASFuzzy();
+              if (Const::materialized == 0) {
+                buildIPGFuzzy();
+              } else {
+                generateQueryFile();
+                generateSax();
+                generatePaa();
+                generateGroundTruth();
+                buildFADASFuzzy();
+              }
             }
             else if(Const::ops == 1){
                 if(Const::materialized == 0)    recallExprResIPGFuzzy();
@@ -1025,10 +1045,10 @@ int main() {
 {
   // 生成数据
 //   generateRandQuery();
-  generateQueryFile();
-  generateSax();
-  generatePaa();
-  generateGroundTruth();
+//   generateQueryFile();
+//   generateSax();
+//   generatePaa();
+//   generateGroundTruth();
 
   if (false) {
     // fadas
@@ -1039,9 +1059,15 @@ int main() {
   }
 
   if (true) {
-    // fadas fuzzy
-    buildIPGFuzzy();
-    recallExprResIPGFuzzy();
+    // buildIPGFuzzy();
+    // recallExprResIPGFuzzy();
+
+    // Fadas fuzzy
+    // buildFADASFuzzy();
+    // recallExprResFADASFuzzy();
+
+    // buildDumpyParallel();
+    // multiwayDumpySearch();
   }
 
 // generateGroundTruthDTW();

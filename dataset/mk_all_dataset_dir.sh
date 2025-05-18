@@ -9,6 +9,8 @@ create_dir() {
     mkdir -p "${target_dir}/query"
     mkdir -p "${target_dir}/res"
     mkdir -p "${target_dir}/sax"
+    mkdir -p "${target_dir}/index"
+    mkdir -p "${target_dir}/fuzzy"
 }
 
 main() {
