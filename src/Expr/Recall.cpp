@@ -1054,6 +1054,9 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
             cout<<"k: " << k << endl;
             cout<<"threshold: " << threshold<< endl;
 
+            auto search_loop_start = MyTimer::Now();
+            MyTimer::search_timecount_us_ = 0;
+            MyTimer::exact_search_timecount_us_ = 0;
             for(int curRound = 0; curRound < maxExprRound; ++curRound){
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
@@ -1064,10 +1067,10 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                   query = querys[curRound].data();
                 }
                 reorder_query(query, query_reordered, ordering);
-                auto start = chrono::system_clock::now();
+                auto start = MyTimer::Now();
                 vector<PqItemSeries*> *approxKnn = FADASSearcher::approxSearch(root, query, k, g, index_dir, query_reordered,
                                                                                ordering);
-                auto end = chrono::system_clock::now();
+                auto end = MyTimer::Now();
 //                for(int i=0;i<256;++i)
 //                    cout << (*approxKnn)[0]->ts[i] <<",";
                 vector<float*>* exactKnn = getResult(Const::resfn, offset + curRound, k);
@@ -1093,6 +1096,17 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 }
             }
             ++_k;
+
+            auto search_loop_duration =
+                MyTimer::Duration<std::chrono::microseconds>(search_loop_start,
+                                                             MyTimer::Now());
+            MyTimer::search_timecount_us_ = search_loop_duration.count();
+
+            printf("total time per search: %zuus\n",
+                   MyTimer::search_timecount_us_ / maxExprRound);
+            printf("exact time per search: %zuus\n",
+                   MyTimer::exact_search_timecount_us_ / maxExprRound);
+
             // cout << endl;
             // for(int _:layers)   cout << _ << ",";
             // cout << endl;
