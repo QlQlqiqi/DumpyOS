@@ -142,6 +142,7 @@ class FADASNode {
     int get1stLayerNodesNo();
     static long generateSaxTblParallel();
 
+    bool check() const;
 
 public:
     const static int power_2[];

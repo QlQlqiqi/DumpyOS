@@ -202,7 +202,6 @@ void FileUtil::generateQueryFile(const string& data_file, const string& query_fi
            }
         }
         // cout << n << ",";
-        n = 0;
         float *ts;
         while (true){
             ts = readSeriesOffset(inf, n);

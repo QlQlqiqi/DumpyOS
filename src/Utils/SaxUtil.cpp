@@ -5,6 +5,7 @@
 #include "../../include/Utils/SaxUtil.h"
 #include "../../include/Utils/FileUtil.h"
 #include "../../include/DataStructures/TimeSeries.h"
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -233,9 +234,10 @@ void SaxUtil::saxFromTs(const float*ts, unsigned short *sax, int tsLengthPerSegm
 
         if(index >= 0)
             sax[si] = (index - offset);
-        else
-            cout<<"ERROR!!!!!!!";
-
+        else {
+          cout << "ERROR!!!!!!!\n";
+          exit(-1);
+        }
     }
     //sax_print(sax_out, segments, cardinality);
 }
@@ -1369,7 +1371,9 @@ void SaxUtil::generateSaxFile(const string &fn , const string &output){
         // if(i % 1000000 == 0)    cout << i << endl;
         fread(ts, sizeof(float ), Const::tsLength, f);
         if(isnan(ts[0])){
-            for(auto &t:sax)    t = 0;
+            printf("ts is nan\n");
+            exit(-1);
+            // for(auto &t:sax)    t = 0;
             // cout << i << "," <<endl;
         }
         else    saxFromTs(ts, sax, Const::tsLengthPerSegment, Const::segmentNum, Const::cardinality);

@@ -18,6 +18,7 @@
 #include "../../include/Utils/TimeSeriesUtil.h"
 #include "../../include/DataStructures/SafePq.h"
 #include "../../include/DataStructures/SafeHashMap.h"
+#include "../../include/MyTimer.h"
 
 extern long LB_SERIES_TIME = 0, HEAP_TIME = 0, IO_URING_WAIT = 0, IO_ACTUAL_WAIT = 0,
     LB_NODE_TIME_STAT = 0, LB_NODE_CNT = 0, LOADED_NODE_CNT = 0;
@@ -97,10 +98,19 @@ vector<PqItemSeries *> * FADASSearcher::approxSearch(FADASNode *root, float *que
         if(node->isInternalNode()){
             approxSearchInterNode(node, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
         }else { node->search(k, queryTs, *heap, index_dir, query_reordered, ordering); targetNode = node;}
-    }else if(!cur->isInternalNode()){
-        { cur->search(k, queryTs, *heap, index_dir, query_reordered, ordering); targetNode = cur;}
-    }else approxSearchInterNode(cur, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
-    
+    } else if (!cur->isInternalNode()) {
+      {
+        auto start = MyTimer::Now();
+        cur->search(k, queryTs, *heap, index_dir, query_reordered, ordering);
+        targetNode = cur;
+        auto duration =
+            MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
+        MyTimer::exact_search_timecount_us_ += duration.count();
+      }
+    } else
+      approxSearchInterNode(cur, queryTs, sax, k, heap, index_dir,
+                            query_reordered, ordering);
+
     delete queryTs;
     sort(heap->begin(), heap->end(), PqItemSeriesMaxHeap());
     return heap;
@@ -385,7 +395,14 @@ void FADASSearcher::approxSearchInterNode(FADASNode *root, TimeSeries *queryTs, 
     if(node->isInternalNode()){
         approxSearchInterNode(node, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
         return;
-    }else { node->search(k, queryTs, *heap, index_dir, query_reordered, ordering); targetNode = node;}
+    }else {
+      auto start = MyTimer::Now();
+      node->search(k, queryTs, *heap, index_dir, query_reordered, ordering);
+      targetNode = node;
+      auto duration =
+          MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
+      MyTimer::exact_search_timecount_us_ += duration.count();
+    }
 }
 
 vector<PqItemSeries *> * FADASSearcher::approxSearchDTW(FADASNode *root, float *query, int k, vector<vector<int>> *g,

@@ -11,6 +11,8 @@ config.ini 是控制的配置文件，expr sec 中 dataset 指定的是用什么
 
 目前所有的数据集点都是归一化的
 
+目前 DumpyOS 尚存一个问题（是否是问题有待考证）：当 node 中数据量超过 Const::th 时，需要进行 split，但是代码中每次 split 前后数据量减少的幅度极低，比如几百 ms 时间进行一次 split，但是只减少几十数据量，效率过低。
+
 
 
 

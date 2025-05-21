@@ -5,6 +5,7 @@
 #include "../../include/DataStructures/FADASNode.h"
 #include "../../include/Utils/FileUtil.h"
 #include "../../include/Utils/MathUtil.h"
+#include <cassert>
 #include <thread>
 
 static int fuzzy_num = 0;
@@ -218,6 +219,18 @@ void materializeInterNodeFuzzy(FADASNode* node, unsigned short *saxes, int actua
     MAT2_TOTAL_TIME += chrono::duration_cast<chrono::microseconds>(end_t - start_t).count();
 }
 
+bool FADASNode::check() const {
+  if (partition_id == -1) {
+    return false;
+  }
+  for (const auto child : children) {
+    if (child && !child->check()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & saxfn, const string &paafn, vector<vector<int>>* g){
     auto start_t = chrono::system_clock::now();
     FileUtil::checkDirClean(Const::fuzzyidxfn.c_str());
@@ -269,10 +282,12 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
         if(nodeIn1stLayer[i].size > Const::th) {
             root->children[i] = new FADASNode(1, nodeIn1stLayer[i].size, i);
             root->children[i]->generateSaxAndCardIn1stLayer(i);
+            // root->children[i]->partition_id = childrenList[nodeIn1stLayer[i].pid]->partition_id;
             internal_size += root->children[i]->size;
         }else if(nodeIn1stLayer[i].pid == -1){
             root->children[i] = new FADASNode(1, nodeIn1stLayer[i].size, i);
             root->children[i]->generateSaxAndCardIn1stLayer(i);
+            // root->children[i]->partition_id = childrenList[nodeIn1stLayer[i].pid]->partition_id;
         }
         else{
             int pid = nodeIn1stLayer[i].pid;
@@ -294,6 +309,10 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     }
     Const::logPrint("Finish build index structure 1st layer.");
 
+    // for (const auto child : root->children) {
+    //   assert(!child || child->check());
+    // }
+
     // put data offsets to internal nodes in 1st layer
     for(int i=0;i<Const::vertexNum;++i)
         if(root->children[i]!= nullptr)
@@ -308,11 +327,22 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
 
     unordered_map<FADASNode*, NODE_RECORDER>FLNT;
     root->fuzzyFirstLayer(nodeIn1stLayer, navids, FLNT, *paa_mu_part_units);
+    {
+      for (int i = 0; i < Const::vertexNum; ++i) {
+        if (root->children[i] && root->children[i]->partition_id == -1) {
+          root->children[i]->partition_id =
+              childrenList[nodeIn1stLayer[i].pid]->partition_id;
+        }
+      }
+    }
     delete paa_mu_part_units;
     start = chrono::system_clock::now();
     FUZZY_CPU_TIME_1st = chrono::duration_cast<chrono::microseconds>(start - end).count();
     Const::logPrint("1st layer fuzzy number is " + to_string(fuzzy_num));
 
+    // for (const auto child : root->children) {
+    //   assert(!child || child->check());
+    // }
 
     thread IO(materialize1stLayerFuzzy, datafn, root, navids, Const::fuzzyidxfn, &FLNT);
 
@@ -343,6 +373,11 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
 
     IO.join();
     // navids have been deleted in the process of materializing the 1st layer
+
+    // 查看是否有哪个非 root 外的 node partition id 是 -1
+    // for (const auto child : root->children) {
+    //   assert(!child || child->check());
+    // }
 
     Const::logPrint("Start materialize internal nodes in the 1st layer");
     finished_series = 0; finished_percent = 0;
@@ -480,16 +515,20 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
 
     for(auto &child: children){
         if(child!= nullptr){
-            if(child->size > Const::th)
-                child->growIndexFuzzy(navigating_tbl, g);
-            else{   // this may be executed many times for the same node, but no problem
-                if(navigating_tbl[child].series_index_list.empty())
-                    navigating_tbl.erase(child);
-                else{
-                    navigating_tbl[child].actual_size = 0;
-                    sort(navigating_tbl[child].series_index_list.begin(),  navigating_tbl[child].series_index_list.end());
-                }
+          if (child->size > Const::th) {
+            printf("%d\n", child->size);
+            child->growIndexFuzzy(navigating_tbl, g);
+          }
+          else { // this may be executed many times for the same node, but no
+                 // problem
+            if (navigating_tbl[child].series_index_list.empty())
+              navigating_tbl.erase(child);
+            else {
+              navigating_tbl[child].actual_size = 0;
+              sort(navigating_tbl[child].series_index_list.begin(),
+                   navigating_tbl[child].series_index_list.end());
             }
+          }
         }
     }
 }
@@ -646,11 +685,14 @@ void FADASNode::fuzzyFirstLayer(vector<partUnit> &part_units, const int *nav_ids
     }
     for(int i=0;i<Const::vertexNum;++i){
         if(children[i] == nullptr)  continue;
-        if(this->children[i]->partition_id == -1)
-            fuzzySeriesInPartUnitInFirstLayer(part_units, this->children[i]->offsets, i, navigating_tbl,
-                                              paa_mu_part_units);
-        else
-            fuzzySeriesInPartUnitInFirstLayer(part_units, node_offsets[i], i, navigating_tbl, paa_mu_part_units);
+        if (this->children[i]->partition_id == -1) {
+          fuzzySeriesInPartUnitInFirstLayer(part_units,
+                                            this->children[i]->offsets, i,
+                                            navigating_tbl, paa_mu_part_units);
+        } else {
+          fuzzySeriesInPartUnitInFirstLayer(part_units, node_offsets[i], i,
+                                            navigating_tbl, paa_mu_part_units);
+        }
     }
     node_offsets.clear();
     for(auto &iter: navigating_tbl){
