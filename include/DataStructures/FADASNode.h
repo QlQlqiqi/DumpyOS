@@ -80,6 +80,7 @@ class FADASNode {
         for(auto &i:bits_cardinality)   i = 1;
     }
     FADASNode(const FADASNode* parent, int _size, int _id){
+        partition_id = parent->id;
         layer = parent->layer + 1;
         id = _id;
         size = _size;
@@ -87,12 +88,14 @@ class FADASNode {
         chosenSegments.clear();
     }
     FADASNode(const FADASNode* parent, int pid){
+        partition_id = parent->id;
         layer = parent->layer + 1;
         partition_id = pid;
         file_id  = parent->file_id + "_" + to_string(partition_id);
         bits_cardinality[0] = -1;
     }
     FADASNode(const FADASNode* parent, int _id, bool is_insert){
+        partition_id = parent->id;
         layer = parent->layer + 1;
         file_id  = parent->file_id + "_" + to_string(_id);
         size = 1;
@@ -143,6 +146,7 @@ class FADASNode {
     static long generateSaxTblParallel();
 
     bool check() const;
+    void setPartition(FADASNode *childrenList[], const std::vector<partUnit> &nodeIn1stLayer);
 
 public:
     const static int power_2[];

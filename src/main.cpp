@@ -745,15 +745,19 @@ void recallExprResIncFADAS(){
 void buildFADASFuzzy(){
     auto g = loadGraphSkeleton();
     int bound = Const::boundary * 100;
-    Const::fuzzyidxfn += "/" + to_string(bound) + "-" + to_string(Const::max_replica) + "/";
+    // Const::fuzzyidxfn += "/" + to_string(bound) + "-" + to_string(Const::max_replica) + "/";
+    auto tmp = Const::fuzzyidxfn + to_string(bound) + "-" +
+               to_string(Const::max_replica);
     FADASNode* root = FADASNode::BuildIndexFuzzy(Const::datafn, Const::saxfn, Const::paafn, g);
-    root->save2Disk(Const::fuzzyidxfn + "root.idx");
+    root->save2Disk(tmp + "_root.idx");
 }
 
 void recallExprResFADASFuzzy(){
     int bound = Const::boundary * 100;
-    Const::fuzzyidxfn += "/" + to_string(bound) + "-" + to_string(Const::max_replica) + "/";
-    FADASNode* root = FADASNode::loadFromDisk(Const::saxfn, Const::fuzzyidxfn + "root.idx", false);
+    // Const::fuzzyidxfn += "/" + to_string(bound) + "-" + to_string(Const::max_replica) + "/";
+    auto tmp = Const::fuzzyidxfn + to_string(bound) + "-" +
+               to_string(Const::max_replica);
+    FADASNode* root = FADASNode::loadFromDisk(Const::saxfn, tmp + "_root.idx", false);
     auto *g = loadGraphSkeleton();
     Recall::doExprWithResFADAS(root, g, Const::fuzzyidxfn);
 }
