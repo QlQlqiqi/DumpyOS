@@ -1,4 +1,4 @@
-config.ini 是控制的配置文件，expr sec 中 dataset 指定的是用什么数据集，目前有 4 种。当选择了其中一种后，在对应数据集的 sec 中配置相应的文件目录和 time series 数据点个数。比如对于数据集 gas 来说，dataset 中会有一个目录 gas，然后在其下面会有各个目录，其中 data 目录是保存原数据 time series 的，这个数据来自于下面的**注释 1**。
+config.ini 是控制的配置文件，expr sec 中 dataset 指定的是用什么数据集，目前有 4 种。需要配置 rootfn 作为数据集的根目录，还需要配置 time series 数据点个数。比如对于数据集 gas 来说，dataset 中会有一个目录 gas，然后在其下面会有各个目录，其中 data 目录是保存原数据 time series 的，这个数据来自于下面的**注释 1**。（如果没有配置 rootfn，那么就需要配置各种 fn，详见 Const.h）
 
 首先是 build Fadas fuzzy index，那么设置 config.ini 中 index = 1、ops = 0，materialized = 1。这时候可能会出现以下几种错误：
 
@@ -13,6 +13,7 @@ config.ini 是控制的配置文件，expr sec 中 dataset 指定的是用什么
 
 目前 DumpyOS 尚存一个问题（是否是问题有待考证）：当 node 中数据量超过 Const::th 时，需要进行 split，但是代码中每次 split 前后数据量减少的幅度极低，比如几百 ms 时间进行一次 split，但是只减少几十数据量，效率过低。
 
+如果 build 时候一直输出某个数字，那么是在进行 split，直到其小于 Const::th，可以通过调大这个参数解决。
 
 
 

@@ -4120,6 +4120,7 @@ void FADASNode::determineSegments(){
         plan_num = FADASNode::combine_num[lambda_max];
     else
         plan_num = 1;
+        // std::cout << "======================\n" << plan_num << std::endl;
     unordered_set<int>visited;
     double max_score = 0;
     vector<int> best_plan;
@@ -4152,6 +4153,7 @@ void FADASNode::determineSegments(){
                                    &max_score, best_plan, lambda_min, mask_code, data_seg_stdev, score);
         vector<int>().swap(plan_node_sizes);
     }
+    // std::cout << "over" << std::endl;
 
     unordered_set<int>().swap(visited);
     vector<int>().swap(unit_size);

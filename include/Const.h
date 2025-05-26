@@ -25,6 +25,7 @@ public:
 //    constexpr const static double boundary_1st = 0.2, boundary = 0.15, filling_factor_1st = 0.8, filling_factor = 0.5;
 
     // sec:expr
+    static string rootfn;
     static string dataset, method;
     static int tsLength, maxK, index, ops, materialized, method_code, query_num, series_num, k, dtw_window_size,
     batch_size, batch_num, pre_read, read_file_while_search, thread_num, messi_pq_num, SSD_pq_num;
@@ -170,45 +171,41 @@ public:
         bitsReserve = reader.GetInteger("other", "bitsReserve", 6);
         cout << "bitsReserve: " << bitsReserve << endl;
 
-        tsLength = reader.GetInteger(dataset, "tsLength", -1);
+        tsLength = reader.GetInteger("expr", "tsLength", -1);
         cout << "tsLength: " << tsLength << endl;
         if(tsLength == -1)  exit(-1);
 
-        paafn = reader.Get(dataset, "paafn","");
-        cout << "paafn: " << paafn <<endl;
+        // rootfn 如果被配置了，那么就以这个为准修改各个 fn
+        rootfn = reader.Get("expr", "rootfn", "");
+        if (!rootfn.empty()) {
+          configRootfn();
+        } else {
+          fidxfn = reader.Get(dataset, "fidxfn", "");
+          fuzzyidxfn = reader.Get(dataset, "fuzzyidxfn", "");
+          datafn = reader.Get(dataset, "datafn", "");
+          paafn = reader.Get(dataset, "paafn", "");
+          saxfn = reader.Get(dataset, "saxfn", "");
+          idxfn = reader.Get(dataset, "idxfn", "");
+          queryfn = reader.Get(dataset, "queryfn", "");
+          resfn = reader.Get(dataset, "resfn", "");
+          posidxfn = reader.Get(dataset, "posidxfn", "");
+          dtwresfn = reader.Get(dataset, "dtwresfn", "");
+          dstreefn = reader.Get(dataset, "dstreefn", "");
+          tardisfn = reader.Get(dataset, "tardisfn", "");
+        }
 
-        saxfn = reader.Get(dataset, "saxfn","");
-        cout << "saxfn: " << saxfn <<endl;
-
-        idxfn = reader.Get(dataset, "idxfn","");
-        cout << "idxfn: " << idxfn <<endl;
-
-        fidxfn = reader.Get(dataset, "fidxfn","");
-        cout << "fidxfn: " << fidxfn <<endl;
-
-        posidxfn = reader.Get(dataset, "posidxfn","");
-        cout << "posidxfn: " << posidxfn <<endl;
-
-        fuzzyidxfn = reader.Get(dataset, "fuzzyidxfn","");
-        cout << "fuzzyidxfn: " << fuzzyidxfn <<endl;
-
-        datafn = reader.Get(dataset, "datafn","");
-        cout << "datafn: " << datafn <<endl;
-
-        queryfn = reader.Get(dataset, "queryfn","");
-        cout << "queryfn: " << queryfn <<endl;
-
-        resfn = reader.Get(dataset, "resfn","");
-        cout << "resfn: " << resfn <<endl;
-
-        dtwresfn = reader.Get(dataset, "dtwresfn","");
-        cout << "dtwresfn: " << dtwresfn <<endl;
-
-        dstreefn = reader.Get(dataset, "dstreefn","");
-        cout << "dstreefn: " << dstreefn <<endl;
-
-        tardisfn = reader.Get(dataset, "tardisfn","");
-        cout << "tardisfn: " << dstreefn <<endl;
+        cout << "fidxfn: " << fidxfn << endl;
+        cout << "fuzzyidxfn: " << fuzzyidxfn << endl;
+        cout << "datafn: " << datafn << endl;
+        cout << "paafn: " << paafn << endl;
+        cout << "saxfn: " << saxfn << endl;
+        cout << "idxfn: " << idxfn << endl;
+        cout << "queryfn: " << queryfn << endl;
+        cout << "resfn: " << resfn << endl;
+        cout << "posidxfn: " << posidxfn << endl;
+        cout << "dtwresfn: " << dtwresfn << endl;
+        cout << "dstreefn: " << dstreefn << endl;
+        cout << "tardisfn: " << dstreefn << endl;
 
         tsLengthPerSegment = tsLength / segmentNum;
         cardinality = 1<<bitsCardinality;
@@ -277,6 +274,35 @@ public:
         struct timeval now{};
         (void)gettimeofday(&now, NULL);
         return (now.tv_sec - start->tv_sec)*1000000 + ((double)now.tv_usec - start->tv_usec) ;
+    }
+
+    static void configRootfn() {
+      fidxfn = rootfn + dataset + "/index/";
+      fuzzyidxfn = rootfn + dataset + "/fuzzy/";
+      datafn = rootfn + dataset + "/data/" + dataset + "-" +
+               std::to_string(tsLength) + "-" +
+               std::to_string(series_num / 1000) + "k_" +
+               std::to_string(segmentNum) + ".bin";
+      paafn = rootfn + dataset + "/paa/" + dataset + "-" +
+              std::to_string(tsLength) + "-" +
+              std::to_string(series_num / 1000) + "k_" +
+              std::to_string(segmentNum) + ".bin";
+      saxfn = rootfn + dataset + "/sax/" + dataset + "-" +
+              std::to_string(tsLength) + "-" +
+              std::to_string(series_num / 1000) + "k_" +
+              std::to_string(segmentNum) + ".bin";
+      idxfn = rootfn + dataset + "/in-memory/" + dataset + "-" +
+              std::to_string(tsLength) + "-" +
+              std::to_string(series_num / 1000) + "k_" +
+              std::to_string(segmentNum) + ".bin";
+      queryfn = rootfn + dataset + "/query/" + dataset + "-" +
+                std::to_string(tsLength) + "-" +
+                std::to_string(series_num / 1000) + "k_" +
+                std::to_string(segmentNum) + ".bin";
+      resfn = rootfn + dataset + "/res/" + dataset + "-" +
+              std::to_string(tsLength) + "-" +
+              std::to_string(series_num / 1000) + "k_" +
+              std::to_string(segmentNum) + ".bin";
     }
 
 };

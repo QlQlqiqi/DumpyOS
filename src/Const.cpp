@@ -4,6 +4,7 @@
 #include "../include/Const.h"
 
 // sec:expr
+std::string Const::rootfn = "";
 string Const::dataset = "",Const:: method = "";
 int Const::tsLength = -1, Const::maxK = -1, Const::index = -1, Const::ops = -1, Const::materialized = -1,
 Const::method_code = -1, Const::query_num = -1, Const::series_num = -1, Const::k = -1, Const::dtw_window_size = -1,
