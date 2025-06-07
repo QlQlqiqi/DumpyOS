@@ -764,8 +764,10 @@ void recallExprResFADASFuzzy(){
 
 void recallExprResIncFADASFuzzy(){
     int bound = Const::boundary * 100;
-    Const::fuzzyidxfn += "/" + to_string(bound) + "-" + to_string(Const::max_replica) + "/";
-    FADASNode* root = FADASNode::loadFromDisk(Const::saxfn, Const::fuzzyidxfn + "root.idx", false);
+    // Const::fuzzyidxfn += "/" + to_string(bound) + "-" + to_string(Const::max_replica) + "/";
+    auto tmp = Const::fuzzyidxfn + to_string(bound) + "-" +
+               to_string(Const::max_replica);
+    FADASNode* root = FADASNode::loadFromDisk(Const::saxfn, tmp + "_root.idx", false);
     auto *g = loadGraphSkeleton();
     Recall::doExprWithResIncFADASFuzzy(root, g, Const::fuzzyidxfn);
 }
@@ -839,6 +841,8 @@ int main(int argc, char **argv) {
             Const::ops = 0;
         } else if(strcmp(argv[1], "search") == 0) {
             Const::ops = 1;
+        } else if (strcmp(argv[1], "inc-search") == 0) {
+          Const::ops = 2;
         }
     }
 
@@ -946,6 +950,8 @@ int main(int argc, char **argv) {
             else if(Const::ops == 1){
                 if(Const::materialized == 0)    recallExprResIPGFuzzy();
                 else recallExprResFADASFuzzy();
+            }else if(Const::ops == 2) {
+                recallExprResIncFADASFuzzy();
             }else if(Const::ops == 4){
                 if(Const::materialized == 1)    statIndexFADASFuzzy();
             }else if(Const::ops == 5){

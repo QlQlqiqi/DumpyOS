@@ -1674,9 +1674,21 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
     int node_nums[]{1,2,3,4,5,10,25};
 //    int node_nums[]{10};
     float *query;
-    FILE *f = fopen(Const::queryfn.c_str(), "rb");
+    FILE *f = nullptr;
     long offset = 0;
-    fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+    std::vector<std::vector<float>> querys;
+    if (!Const::read_file_while_search) {
+      f = fopen(Const::queryfn.c_str(), "rb");
+      fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+      querys.resize(Const::query_num, std::vector<float>(Const::tsLength));
+      for (auto &query : querys) {
+        FileUtil::readSeries(f, query.data());
+      }
+      fclose(f);
+    } else {
+      f = fopen(Const::queryfn.c_str(), "rb");
+      fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+    }
     for(int node_num: node_nums){
         int recallNums[maxExprRound];
         int search_number[maxExprRound];
@@ -1688,16 +1700,25 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
         cout<<"k: " << k << endl;
         cout<<"node number: " << node_num<< endl;
 
+        auto search_loop_start = MyTimer::Now();
+        MyTimer::search_timecount_us_ = 0;
+        MyTimer::exact_search_timecount_us_ = 0;
         for(int curRound = 0; curRound < maxExprRound; ++curRound){
             //                    cout<<"Round : " + (curRound + 1));
             c_nodes.clear();
             _search_num = 0;
-            query = FileUtil::readSeries(f);
-            auto start = chrono::system_clock::now();
-            vector<PqItemSeries*> *approxKnn = FADASSearcher::approxIncSearchFuzzy(root, query, k, index_dir, node_num);
-            auto end = chrono::system_clock::now();
-//                for(int i=0;i<256;++i)
-//                    cout << (*approxKnn)[0]->ts[i] <<",";
+            if (Const::read_file_while_search) {
+              query = FileUtil::readSeries(f);
+            } else {
+              query = querys[curRound].data();
+            }
+            auto start = MyTimer::Now();
+            vector<PqItemSeries *> *approxKnn =
+                FADASSearcher::approxIncSearchFuzzy(root, query, k, index_dir,
+                                                    node_num);
+            auto end = MyTimer::Now();
+            //                for(int i=0;i<256;++i)
+            //                    cout << (*approxKnn)[0]->ts[i] <<",";
             vector<float*>* exactKnn = getResult(Const::resfn, offset + curRound, k);
             vector<PqItemSeries*> exactKnn2;
             for(float *t: *exactKnn)
@@ -1710,17 +1731,30 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
             error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
             inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
 //                cout << curRound << ":"<<recallNums[curRound] << endl;
-            cout << recallNums[curRound] << ",";
+            // cout << recallNums[curRound] << ",";
             fflush(stdout);
             free_heap(approxKnn);
             for(int i=0;i<k;++i)
                 delete[] (*exactKnn)[i];
             delete exactKnn;
-            delete[] query;
+            if (Const::read_file_while_search) {
+              delete[] query;
+            }
         }
-        cout << fixed  << endl;
-        for(int _:layers)   cout << _ << ",";
-        cout << endl;
+
+        auto search_loop_duration =
+            MyTimer::Duration<std::chrono::microseconds>(search_loop_start,
+                                                         MyTimer::Now());
+        MyTimer::search_timecount_us_ = search_loop_duration.count();
+
+        printf("total time per search: %zuus\n",
+               MyTimer::search_timecount_us_ / maxExprRound);
+        printf("exact time per search: %zuus\n",
+               MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+        // cout << fixed  << endl;
+        // for(int _:layers)   cout << _ << ",";
+        // cout << endl;
 //            for(double _:error_ratio)   cout << _ << ",";
         int totalRecallNum = 0;
         for(int temp:recallNums)
@@ -1737,10 +1771,11 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
         total_duration /= (double ) maxExprRound;
         cout<<"Average duration is : " << total_duration << "us. "
             <<"And QPS = "<< 1000000.0 / total_duration <<endl;
-        for(int _:search_number)    cout << _ <<",";
-        cout << endl;
-        rewind(f);
-
+        // for(int _:search_number)    cout << _ <<",";
+        // cout << endl;
+        if (Const::read_file_while_search) {
+          rewind(f);
+        }
     }
 
     fclose(f);
