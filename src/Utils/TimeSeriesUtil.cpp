@@ -304,6 +304,10 @@ double TimeSeriesUtil::euclideanDist(const vector<float>* ts_1, const float* ts_
 
 double TimeSeriesUtil::euclideanDist(float *query_reordered, float *ts, int size, double bound, int *order)
 {
+    // static size_t cnt = 0;
+    // if ((++cnt % 100000) == 0) {
+    //     std::cout << cnt << std::endl;
+    // }
     int i;
     float sum = 0;
     for ( i = 0 ; i < size && sum < bound ; i++ )

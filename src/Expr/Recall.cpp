@@ -17,6 +17,7 @@
 #include "../../include/Const.h"
 #include "../../include/MyTimer.h"
 #include "../../include/TAR/TARGNode.h"
+#include <queue>
 #include <string>
 //#include <gperftools/profiler.h>
 #include <iostream>

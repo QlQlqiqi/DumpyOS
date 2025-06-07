@@ -3,6 +3,8 @@ project(FADAS)
 
 set(CMAKE_CXX_STANDARD 23)
 # set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -g")
 set(CMAKE_BUILD_TYPE Debug)
 #set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #add_definitions(-DMALLOC_CHECK_=2)

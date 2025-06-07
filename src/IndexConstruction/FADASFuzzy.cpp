@@ -7,6 +7,7 @@
 #include "../../include/Utils/MathUtil.h"
 #include <cassert>
 #include <cstdio>
+#include <queue>
 #include <thread>
 
 static int fuzzy_num = 0;
@@ -436,7 +437,40 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
          << "ms, while I/O write time is " << MAT2_WRITE_TIME / 1000 << "ms." << endl;
 
     root->getIndexStats();
+
+    {
+        // QlQlqiqi: 需要先记录每个 node 的 leaf node num，便于 print debug info
+        // root->getLeafNodeNum();
+
+        // FADASNode::TraverseBFS(root);
+    }
     return root;
+}
+
+void FADASNode::TraverseBFS(const FADASNode *root) {
+  // 输出每层 node 的 ts num
+  std::queue<std::pair<size_t, const FADASNode *>> que;
+  que.emplace(std::make_pair(1, root));
+  size_t last_depth = 0;
+  while (!que.empty()) {
+    auto [depth, node] = que.front();
+    que.pop();
+    if (last_depth != depth) {
+      last_depth = depth;
+      printf("\n");
+      printf("depth: [%zu]", depth);
+    }
+    if (!node->isInternalNode()) {
+      printf(", %d", node->size);
+    }
+    for (const auto &child : node->children) {
+      if (!child) {
+        continue;
+      }
+      que.emplace(std::make_pair(depth + 1, child));
+    }
+  }
+  printf("\n");
 }
 
 void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &navigating_tbl, vector<vector<int>> *g) {

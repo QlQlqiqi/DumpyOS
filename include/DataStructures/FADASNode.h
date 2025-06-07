@@ -148,7 +148,7 @@ class FADASNode {
     bool check() const;
     void setPartition(FADASNode *childrenList[], const std::vector<partUnit> &nodeIn1stLayer);
 
-    size_t leaf_node_num_ = -1;
+    mutable size_t leaf_node_num_ = -1;
 
 public:
     const static int power_2[];
@@ -219,6 +219,7 @@ public:
 
     void search_offset(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap, const string &index_dir) const;
 
+    static void TraverseBFS(const FADASNode *root);
     static FADASNode*  BuildIndexFuzzy(const string & datafn, const string & saxfn, const string &paafn, vector<vector<int>>* g);
 
     friend class boost::serialization::access;
@@ -240,7 +241,7 @@ public:
     static FADASNode *loadFromDisk(const string &saxfn, const string &idxfn, bool need_sax);
 
     void getIndexStats();
-    int getLeafNodeNum();
+    size_t getLeafNodeNum() const;
     int assignLeafNum();
     int getBiasLeafNodeNum();
 

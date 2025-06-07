@@ -5539,14 +5539,14 @@ int FADASNode::getMaxHeight(){
     return max_height + 1;
 }
 
-int FADASNode::getLeafNodeNum() {
+size_t FADASNode::getLeafNodeNum() const {
   if (leaf_node_num_ != -1) {
     return leaf_node_num_;
   }
   if (!isInternalNode()) {
     return leaf_node_num_ = 1;
   }
-  int sum = 0;
+  size_t sum = 0;
   unordered_set<FADASNode *> hash_map;
   for (FADASNode *child : children) {
     if (child == nullptr || hash_map.find(child) != hash_map.end())
