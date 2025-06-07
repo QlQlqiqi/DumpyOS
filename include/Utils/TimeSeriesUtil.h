@@ -29,6 +29,9 @@ public:
 
     static vector<PqItemSeries> & intersectionTsSets(const vector<PqItemSeries>& tsSet1, const vector<PqItemSeries>& tsSet2);
 
+    // 根据查询结果和真正结果得到 AP
+    static double GetAP(const vector<PqItemSeries *> *approx,
+                        const vector<float *> *res);
 
     static string timeSeries2Line(float* timeSeries) {
         string sb;

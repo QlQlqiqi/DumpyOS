@@ -148,6 +148,8 @@ class FADASNode {
     bool check() const;
     void setPartition(FADASNode *childrenList[], const std::vector<partUnit> &nodeIn1stLayer);
 
+    size_t leaf_node_num_ = -1;
+
 public:
     const static int power_2[];
     static int* mask;

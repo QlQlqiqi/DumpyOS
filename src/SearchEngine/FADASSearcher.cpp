@@ -3759,7 +3759,12 @@ void FADASSearcher::approxIncSearchInterNodeFuzzy(FADASNode *root, TimeSeries *q
     FADASNode *cur = root->route1step(sax), *parent = root;
     while (cur!= nullptr && cur->isInternalNode() && cur->getLeafNodeNum() > node_num) {
         parent = cur;
-        cur = cur->route(sax);
+        auto tmp = cur->route(sax);
+        if (tmp == cur) {
+          cur = nullptr;
+        } else {
+          cur = tmp;
+        }
     }
 
     if(cur!= nullptr){

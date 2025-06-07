@@ -112,61 +112,99 @@ int TimeSeriesUtil::intersectionTsSetsCardinality(const vector<PqItemSeries *> *
     return intersectionNum;
 }
 
-//int TimeSeriesUtil::intersectionTsSetsCardinality(const vector<PqItemSeriesVector *> *tsSet1, vector<float *> *tsSet2){
-//    int intersectionNum = 0, size= tsSet1->size();
-//    for(const PqItemSeriesVector* currentTs : *tsSet1)
-//        for(int i=0;i<size;++i){
-//            if(isSame(currentTs, (*tsSet2)[i])) {
-//                intersectionNum++;
-//                break;
-//            }
-//        }
-//
-//    return intersectionNum;
-//}
-//
-//int TimeSeriesUtil::intersectionTsSetsCardinality(const vector<PqItemSeriesVector *> *tsSet1, const vector<PqItemSeriesVector *> *tsSet2){
-//    int intersectionNum = 0;
-//    for(const PqItemSeriesVector* currentTs : *tsSet1)
-//        for (const PqItemSeriesVector* targetTs : *tsSet2)
-//            if (isSame(currentTs, targetTs)) {
-//                intersectionNum += 1;
-//                break;
-//            }
-//    return intersectionNum;
-//}
-//
-//int TimeSeriesUtil::intersectionTsSetsCardinality(const vector<PqItemSeriesVector *> &tsSet1, const vector<PqItemSeriesVector *> &tsSet2){
-//    int intersectionNum = 0;
-//    for(const PqItemSeriesVector* currentTs : tsSet1)
-//        for (const PqItemSeriesVector* targetTs : tsSet2)
-//            if (isSame(currentTs, targetTs)) {
-//                intersectionNum += 1;
-//                break;
-//            }
-//    return intersectionNum;
-//}
-//
-//int TimeSeriesUtil::intersectionTsSetsCardinality(const vector<PqItemSeriesVector> &tsSet1, const vector<PqItemSeriesVector> &tsSet2){
-//    int intersectionNum = 0;
-//    for(const PqItemSeriesVector& currentTs : tsSet1)
-//        for (const PqItemSeriesVector& targetTs : tsSet2)
-//            if (isSame(currentTs, targetTs)) {
-//                intersectionNum += 1;
-//                break;
-//            }
-//    return intersectionNum;
-//}
+double TimeSeriesUtil::GetAP(const vector<PqItemSeries *> *approx,
+                             const vector<float *> *res) {
+  auto approx_sz = approx->size();
+  assert(approx_sz <= res->size());
 
-vector<PqItemSeries> & TimeSeriesUtil::intersectionTsSets(const vector<PqItemSeries>& tsSet1, const vector<PqItemSeries>& tsSet2){
-    auto *res = new vector<PqItemSeries>();
-    for(PqItemSeries currentTs : tsSet1)
-        for (PqItemSeries targetTs : tsSet2)
-            if (isSame(currentTs, targetTs)) {
-                res->push_back(currentTs);
-                break;
-            }
-    return *res;
+  double ap = 0;
+  size_t ap_num = 0;
+  const auto begin = res->begin();
+  const auto end = begin + approx_sz;
+  size_t idx = 0;
+  while (idx < approx_sz) {
+    const auto &item = approx->at(idx);
+    bool found = false;
+    for (auto it = begin; it != end; it++) {
+      if (!isSame(item, *it)) {
+        continue;
+      }
+      ap += 1.0 * ++ap_num / ++idx;
+      found = true;
+      break;
+    }
+    if (!found) {
+      idx++;
+    }
+  }
+  ap /= approx_sz;
+
+  return ap;
+}
+
+// int TimeSeriesUtil::intersectionTsSetsCardinality(const
+// vector<PqItemSeriesVector *> *tsSet1, vector<float *> *tsSet2){
+//     int intersectionNum = 0, size= tsSet1->size();
+//     for(const PqItemSeriesVector* currentTs : *tsSet1)
+//         for(int i=0;i<size;++i){
+//             if(isSame(currentTs, (*tsSet2)[i])) {
+//                 intersectionNum++;
+//                 break;
+//             }
+//         }
+//
+//     return intersectionNum;
+// }
+//
+// int TimeSeriesUtil::intersectionTsSetsCardinality(const
+// vector<PqItemSeriesVector *> *tsSet1, const vector<PqItemSeriesVector *>
+// *tsSet2){
+//     int intersectionNum = 0;
+//     for(const PqItemSeriesVector* currentTs : *tsSet1)
+//         for (const PqItemSeriesVector* targetTs : *tsSet2)
+//             if (isSame(currentTs, targetTs)) {
+//                 intersectionNum += 1;
+//                 break;
+//             }
+//     return intersectionNum;
+// }
+//
+// int TimeSeriesUtil::intersectionTsSetsCardinality(const
+// vector<PqItemSeriesVector *> &tsSet1, const vector<PqItemSeriesVector *>
+// &tsSet2){
+//     int intersectionNum = 0;
+//     for(const PqItemSeriesVector* currentTs : tsSet1)
+//         for (const PqItemSeriesVector* targetTs : tsSet2)
+//             if (isSame(currentTs, targetTs)) {
+//                 intersectionNum += 1;
+//                 break;
+//             }
+//     return intersectionNum;
+// }
+//
+// int TimeSeriesUtil::intersectionTsSetsCardinality(const
+// vector<PqItemSeriesVector> &tsSet1, const vector<PqItemSeriesVector>
+// &tsSet2){
+//     int intersectionNum = 0;
+//     for(const PqItemSeriesVector& currentTs : tsSet1)
+//         for (const PqItemSeriesVector& targetTs : tsSet2)
+//             if (isSame(currentTs, targetTs)) {
+//                 intersectionNum += 1;
+//                 break;
+//             }
+//     return intersectionNum;
+// }
+
+vector<PqItemSeries> &TimeSeriesUtil::intersectionTsSets(
+    const vector<PqItemSeries> &tsSet1, const vector<PqItemSeries> &tsSet2) {
+  auto *res = new vector<PqItemSeries>();
+  for (PqItemSeries currentTs : tsSet1)
+    for (PqItemSeries targetTs : tsSet2)
+      if (isSame(currentTs, targetTs)) {
+        res->push_back(currentTs);
+        break;
+      }
+  return *res;
 }
 
 vector<PqItemSeries *> & TimeSeriesUtil::intersectionTsSets(const vector<PqItemSeries *> *tsSet1, const vector<float *> *tsSet2){

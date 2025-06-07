@@ -1045,6 +1045,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
         int _k = 0;
         for(int k:ks){
             int recallNums[maxExprRound];
+            double mAP[maxExprRound];
             int search_number[maxExprRound];
             int layers[maxExprRound];
             long duration[maxExprRound];
@@ -1081,6 +1082,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 duration[curRound] = chrono::duration_cast<chrono::microseconds>(end - start).count();
                 layers[curRound] = layer;
                 recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
+                mAP[curRound] = TimeSeriesUtil::GetAP(approxKnn, exactKnn);
                 search_number[curRound] = _search_num;
                 error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
                 inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
@@ -1106,6 +1108,13 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                    MyTimer::search_timecount_us_ / maxExprRound);
             printf("exact time per search: %zuus\n",
                    MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+            double mAP_score = 0;
+            for (const auto ap : mAP) {
+              mAP_score += ap;
+            }
+            mAP_score /= maxExprRound;
+            printf("mAP is: %.2f\%\n", mAP_score);
 
             // cout << endl;
             // for(int _:layers)   cout << _ << ",";
@@ -1667,6 +1676,11 @@ void Recall::doExprWithResIncFADASDTW(FADASNode *root, vector<vector<int>> *g, c
 }
 
 void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g, const string &index_dir) {
+    {
+        // QlQlqiqi: 需要先记录每个 node 的 leaf node num，否则后面将会一直进行寻找
+        root->getLeafNodeNum();
+    }
+
     int maxExprRound = Const::query_num;
     Const::logPrint( "result file is " + Const::resfn);
     int k = Const::k;
@@ -1691,6 +1705,7 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
     }
     for(int node_num: node_nums){
         int recallNums[maxExprRound];
+        double mAP[maxExprRound];
         int search_number[maxExprRound];
         int layers[maxExprRound];
         long duration[maxExprRound];
@@ -1727,6 +1742,7 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
             duration[curRound] = chrono::duration_cast<chrono::microseconds>(end - start).count();
             layers[curRound] = layer;
             recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
+            mAP[curRound] = TimeSeriesUtil::GetAP(approxKnn, exactKnn);
             search_number[curRound] = _search_num;
             error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
             inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
@@ -1751,6 +1767,13 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
                MyTimer::search_timecount_us_ / maxExprRound);
         printf("exact time per search: %zuus\n",
                MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+        double mAP_score = 0;
+        for (const auto ap : mAP) {
+          mAP_score += ap;
+        }
+        mAP_score /= maxExprRound;
+        printf("mAP is: %.2f\%\n", mAP_score);
 
         // cout << fixed  << endl;
         // for(int _:layers)   cout << _ << ",";
@@ -1778,7 +1801,9 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
         }
     }
 
-    fclose(f);
+    if (Const::read_file_while_search) {
+      fclose(f);
+    }
 }
 
 void Recall::multiwayDumpySearch(FADASNode *root, vector<vector<int>> *g, const string &index_dir) {

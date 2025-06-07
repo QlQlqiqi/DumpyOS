@@ -5539,16 +5539,22 @@ int FADASNode::getMaxHeight(){
     return max_height + 1;
 }
 
-int FADASNode::getLeafNodeNum(){
-    if(!isInternalNode())    return 1;
-    int sum = 0;
-    unordered_set<FADASNode*>hash_map;
-    for(FADASNode*child:children){
-        if(child == nullptr || hash_map.find(child) != hash_map.end())    continue;
-        sum += child->getLeafNodeNum();
-        hash_map.insert(child);
-    }
-    return sum;
+int FADASNode::getLeafNodeNum() {
+  if (leaf_node_num_ != -1) {
+    return leaf_node_num_;
+  }
+  if (!isInternalNode()) {
+    return leaf_node_num_ = 1;
+  }
+  int sum = 0;
+  unordered_set<FADASNode *> hash_map;
+  for (FADASNode *child : children) {
+    if (child == nullptr || hash_map.find(child) != hash_map.end())
+      continue;
+    sum += child->getLeafNodeNum();
+    hash_map.insert(child);
+  }
+  return leaf_node_num_ = sum;
 }
 
 void FADASNode::getBoundRange(double *sum, double *sum_square, int *leafNum, double *sum_dist) {
