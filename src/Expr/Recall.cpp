@@ -1114,7 +1114,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
               mAP_score += ap;
             }
             mAP_score /= maxExprRound;
-            printf("mAP is: %.2f\%\n", mAP_score);
+            printf("mAP is: %.2f\%\n", mAP_score * 100);
 
             // cout << endl;
             // for(int _:layers)   cout << _ << ",";
@@ -1773,7 +1773,7 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
           mAP_score += ap;
         }
         mAP_score /= maxExprRound;
-        printf("mAP is: %.2f\%\n", mAP_score);
+        printf("mAP is: %.2f\%\n", mAP_score * 100);
 
         // cout << fixed  << endl;
         // for(int _:layers)   cout << _ << ",";
