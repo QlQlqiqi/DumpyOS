@@ -22,4 +22,11 @@ public:
   static size_t exact_search_timecount_us_;
 };
 
+// 记录一些次数
+class MyCnt {
+public:
+  // exact search 的 ts 数量
+  static size_t exact_search_item_num;
+};
+
 #endif

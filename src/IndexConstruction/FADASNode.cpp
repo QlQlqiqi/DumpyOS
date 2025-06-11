@@ -13,6 +13,7 @@
 #include "../../include/Utils/MathUtil.h"
 #include "../../include/Utils/TimeSeriesUtil.h"
 #include "../../include/DataStructures/SafeHashMap.h"
+#include "../../include/MyTimer.h"
 
 unsigned short *FADASNode::saxes = nullptr;
 unsigned short **FADASNode::sax_tbl = nullptr;
@@ -113,6 +114,7 @@ extern int _search_num, layer, __layer;
 void FADASNode::search(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap, const string &index_dir,
                        float *query_reordered, int *ordering) const{
     assert(!isInternalNode());
+    MyCnt::exact_search_item_num += size;
     if(query_reordered == nullptr || ordering == nullptr) {
         search(k, queryTs, heap, index_dir);
         return;
@@ -504,6 +506,7 @@ void FADASNode::searchLessPack(int k, TimeSeries *queryTs, vector<PqItemSeries *
 
 void FADASNode::search(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap, const string &index_dir,unordered_set<float*, createhash, isEqual>*hash_set) const{
     assert(!isInternalNode());
+    MyCnt::exact_search_item_num += size;
     double bsf = heap.size() < k? numeric_limits<double>::max() : heap[0]->dist;
     string fn = index_dir+ getFileName();
 

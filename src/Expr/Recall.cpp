@@ -1017,6 +1017,7 @@ void Recall::doExprWithResIPGDynamicPaaMu(IPGNode *root, const string &queryFile
 }
 
 void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const string &index_dir) {
+    root->getLeafNodeNum();
     int maxExprRound = Const::query_num;
     Const::logPrint( "result file is " + Const::resfn);
     int ks[]{1,3,5,10,25,50};
@@ -1059,6 +1060,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
             auto search_loop_start = MyTimer::Now();
             MyTimer::search_timecount_us_ = 0;
             MyTimer::exact_search_timecount_us_ = 0;
+            MyCnt::exact_search_item_num = 0;
             for(int curRound = 0; curRound < maxExprRound; ++curRound){
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
@@ -1109,6 +1111,9 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                    MyTimer::search_timecount_us_ / maxExprRound);
             printf("exact time per search: %zuus\n",
                    MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+            printf("ts num in per exact search: %zu\n",
+                   MyCnt::exact_search_item_num / maxExprRound);
 
             double mAP_score = 0;
             for (const auto ap : mAP) {
@@ -1719,6 +1724,7 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
         auto search_loop_start = MyTimer::Now();
         MyTimer::search_timecount_us_ = 0;
         MyTimer::exact_search_timecount_us_ = 0;
+        MyCnt::exact_search_item_num = 0;
         for(int curRound = 0; curRound < maxExprRound; ++curRound){
             //                    cout<<"Round : " + (curRound + 1));
             c_nodes.clear();
@@ -1768,6 +1774,9 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
                MyTimer::search_timecount_us_ / maxExprRound);
         printf("exact time per search: %zuus\n",
                MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+        printf("ts num in per exact search: %zu\n",
+               MyCnt::exact_search_item_num / maxExprRound);
 
         double mAP_score = 0;
         for (const auto ap : mAP) {

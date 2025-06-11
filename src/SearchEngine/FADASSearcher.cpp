@@ -97,19 +97,22 @@ vector<PqItemSeries *> * FADASSearcher::approxSearch(FADASNode *root, float *que
         // we only concern whether the nearest node is a leaf or an internal node
         if(node->isInternalNode()){
             approxSearchInterNode(node, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
-        }else { node->search(k, queryTs, *heap, index_dir, query_reordered, ordering); targetNode = node;}
+        }else {
+            node->search(k, queryTs, *heap, index_dir, query_reordered, ordering);
+            targetNode = node;
+        }
     } else if (!cur->isInternalNode()) {
-      {
         auto start = MyTimer::Now();
         cur->search(k, queryTs, *heap, index_dir, query_reordered, ordering);
         targetNode = cur;
         auto duration =
             MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
         MyTimer::exact_search_timecount_us_ += duration.count();
-      }
-    } else
-      approxSearchInterNode(cur, queryTs, sax, k, heap, index_dir,
+    } else {
+        // printf("%d\n", cur->size);
+        approxSearchInterNode(cur, queryTs, sax, k, heap, index_dir,
                             query_reordered, ordering);
+    }
 
     delete queryTs;
     sort(heap->begin(), heap->end(), PqItemSeriesMaxHeap());
@@ -366,8 +369,12 @@ void FADASSearcher::approxSearchInterNode(FADASNode *root, TimeSeries *queryTs, 
     FADASNode *cur = root->route(sax);
 
     if(!cur->isInternalNode()){
+        auto start = MyTimer::Now();
         cur->search(k, queryTs, *heap, index_dir, query_reordered, ordering);
         targetNode = cur;
+        auto duration =
+            MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
+        MyTimer::exact_search_timecount_us_ += duration.count();
         return;
     }
 
