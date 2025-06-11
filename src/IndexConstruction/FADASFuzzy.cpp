@@ -438,11 +438,10 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
 
     root->getIndexStats();
 
-    {
-        // QlQlqiqi: 需要先记录每个 node 的 leaf node num，便于 print debug info
-        // root->getLeafNodeNum();
-
-        // FADASNode::TraverseBFS(root);
+    if (Const::debug_print_node_split_info) {
+      // QlQlqiqi: 需要先记录每个 node 的 leaf node num，便于 print debug info
+      root->getLeafNodeNum();
+      FADASNode::TraverseBFS(root);
     }
     return root;
 }
