@@ -940,7 +940,7 @@ int main(int argc, char **argv) {
               if (Const::materialized == 0) {
                 buildIPGFuzzy();
               } else {
-                generateQueryFile();
+                // generateQueryFile();
                 generateSax();
                 generatePaa();
                 generateGroundTruth();
