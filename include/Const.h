@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include "../include/Utils/INIReader.h"
 #include <limits>
+#include <cstring>
 
 
 
@@ -51,6 +52,9 @@ public:
 
     static int tsLengthPerSegment, cardinality, tsLengthBytes, vertexNum, neighborNum;
     static long offset;
+
+    // 和 similar-search 相同
+    const static int tag_idx_start = 0;
 
     static void readConfig(){
         INIReader reader("../config.ini");
@@ -283,32 +287,33 @@ public:
     }
 
     static void configRootfn() {
-      fidxfn = rootfn + dataset + "/index/";
-      fuzzyidxfn = rootfn + dataset + "/fuzzy/";
-      datafn = rootfn + dataset + "/data/" + dataset + "-" +
-               std::to_string(tsLength) + "-" +
-               std::to_string(series_num / 1000) + "k_" +
-               std::to_string(segmentNum) + ".bin";
-      paafn = rootfn + dataset + "/paa/" + dataset + "-" +
-              std::to_string(tsLength) + "-" +
-              std::to_string(series_num / 1000) + "k_" +
-              std::to_string(segmentNum) + ".bin";
-      saxfn = rootfn + dataset + "/sax/" + dataset + "-" +
-              std::to_string(tsLength) + "-" +
-              std::to_string(series_num / 1000) + "k_" +
-              std::to_string(segmentNum) + ".bin";
-      idxfn = rootfn + dataset + "/in-memory/" + dataset + "-" +
-              std::to_string(tsLength) + "-" +
-              std::to_string(series_num / 1000) + "k_" +
-              std::to_string(segmentNum) + ".bin";
-      queryfn = rootfn + dataset + "/query/" + dataset + "-" +
+        fidxfn = rootfn + dataset + "/index/";
+        fuzzyidxfn = rootfn + dataset + "/fuzzy/";
+        char buf[1024];
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "%s-%zu-%zu-data-%zu.bin", dataset.data(), tag_idx_start,
+                series_num, tsLength);
+        datafn = rootfn + dataset + "/data/" + std::string(buf);
+        paafn = rootfn + dataset + "/paa/" + dataset + "-" +
                 std::to_string(tsLength) + "-" +
                 std::to_string(series_num / 1000) + "k_" +
                 std::to_string(segmentNum) + ".bin";
-      resfn = rootfn + dataset + "/res/" + dataset + "-" +
-              std::to_string(tsLength) + "-" +
-              std::to_string(series_num / 1000) + "k_" +
-              std::to_string(segmentNum) + ".bin";
+        saxfn = rootfn + dataset + "/sax/" + dataset + "-" +
+                std::to_string(tsLength) + "-" +
+                std::to_string(series_num / 1000) + "k_" +
+                std::to_string(segmentNum) + ".bin";
+        idxfn = rootfn + dataset + "/in-memory/" + dataset + "-" +
+                std::to_string(tsLength) + "-" +
+                std::to_string(series_num / 1000) + "k_" +
+                std::to_string(segmentNum) + ".bin";
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "%s-%zu-%zu-%zu-query-%zu.bin", dataset.data(),
+                tag_idx_start, series_num, query_num, tsLength);
+        queryfn = rootfn + dataset + "/query/" + std::string(buf);
+        resfn = rootfn + dataset + "/res/" + dataset + "-" +
+                std::to_string(tsLength) + "-" +
+                std::to_string(series_num / 1000) + "k_" +
+                std::to_string(segmentNum) + ".bin";
     }
 
 };
