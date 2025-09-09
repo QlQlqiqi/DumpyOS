@@ -1020,7 +1020,8 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     root->getLeafNodeNum();
     int maxExprRound = Const::query_num;
     Const::logPrint( "result file is " + Const::resfn);
-    int ks[]{1,3,5,10,25,50};
+    // int ks[]{1,3,5,10,25,50};
+    int ks[]{Const::k};
     float query_reordered[Const::tsLength];
     int ordering[Const::tsLength];
 
