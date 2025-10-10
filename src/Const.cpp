@@ -4,7 +4,7 @@
 #include "../include/Const.h"
 
 // sec:expr
-bool Const::debug_print_node_split_info = false;
+bool Const::debug_print_node_split_info = false, Const::is_pack_leafnode = false;
 std::string Const::rootfn = "";
 string Const::dataset = "",Const:: method = "";
 int Const::tsLength = -1, Const::maxK = -1, Const::index = -1, Const::ops = -1, Const::materialized = -1,

@@ -26,7 +26,7 @@ public:
 //    constexpr const static double boundary_1st = 0.2, boundary = 0.15, filling_factor_1st = 0.8, filling_factor = 0.5;
 
     // sec:expr
-    static bool debug_print_node_split_info;
+    static bool debug_print_node_split_info, is_pack_leafnode;
     static string rootfn;
     static string dataset, method;
     static int tsLength, maxK, index, ops, materialized, method_code, query_num, series_num, k, dtw_window_size,
@@ -67,6 +67,9 @@ public:
             reader.GetBoolean("expr", "debug_print_node_split_info", false);
         cout << "debug_print_node_split_info: " << debug_print_node_split_info
              << endl;
+
+        is_pack_leafnode = reader.GetBoolean("expr", "is_pack_leafnode", true);
+        cout << "is_pack_leafnode: " << is_pack_leafnode << endl;
 
         dataset = reader.Get("expr", "dataset","");
         cout << "dataset: " << dataset<<endl;

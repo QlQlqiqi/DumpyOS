@@ -291,7 +291,9 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     Const::logPrint("Finish statistic size of nodes in the 1st layer.");
 
     // partition 1st layer
-    int partNum = partitionNew(nodeIn1stLayer, Const::segmentNum);
+    int partNum = Const::is_pack_leafnode
+                      ? partitionNew(nodeIn1stLayer, Const::segmentNum)
+                      : Const::vertexNum;
     Const::logPrint("Finish partition");
     FADASNode* childrenList[partNum];
     for(int i=0;i<partNum;++i)  childrenList[i] = new FADASNode(1, i);
@@ -518,7 +520,8 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
     if(layer > 1) vector<int>().swap(offsets);
 
 //    int partNum = partition(nodes);
-    int partNum = partition(nodes, chosen_num);
+    int partNum = Const::is_pack_leafnode ? partition(nodes, chosen_num)
+                                          : (1 << chosen_num);
     // build rest data node if any
 //    for(auto &node:nodes)
 //        if(node.size <= Const::th && node.pid == -1)
