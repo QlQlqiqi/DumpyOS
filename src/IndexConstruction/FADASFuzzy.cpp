@@ -443,7 +443,7 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     if (Const::debug_print_node_split_info) {
       // QlQlqiqi: 需要先记录每个 node 的 leaf node num，便于 print debug info
       root->getLeafNodeNum();
-      FADASNode::TraverseBFS(root);
+    // FADASNode::TraverseBFS(root);
       FADASNode::TraverseDFS(root);
     }
     return root;
@@ -485,7 +485,7 @@ void FADASNode::TraverseDFS(const FADASNode *root, const int depth) {
     }
     printf("|-");
   }
-  printf("%d\n", root->size);
+  printf("%d(%d)\n", root->size, root->GetChildrenTotalSize());
   if (root->isInternalNode()) {
     for (const auto &child : root->children) {
       TraverseDFS(child, depth + 1);
@@ -578,7 +578,10 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
     GROW_CPU_TIME += chrono::duration_cast<chrono::microseconds>(end - start).count();
 
     // note that for internal nodes, tbl stores all series index list inside while for leaf nodes, only fuzzy series index list are in the tbl
-    fuzzy(nodes, node_actual_size, node_offsets, series_index_list, chosen_num, navigating_tbl);
+    if (Const::is_fuzzy_copy) {
+      fuzzy(nodes, node_actual_size, node_offsets, series_index_list,
+            chosen_num, navigating_tbl);
+    }
     start = chrono::system_clock::now();
     FUZZY_CPU_TIME += chrono::duration_cast<chrono::microseconds>(start - end).count();
 
@@ -605,6 +608,16 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
           }
         }
     }
+}
+
+int FADASNode::GetChildrenTotalSize() const {
+  int total_size = 0;
+  for (const auto &child : children) {
+    if (child) {
+      total_size += child->size;
+    }
+  }
+  return total_size;
 }
 
 void FADASNode::fuzzy(partUnit* part_units, vector<int>& actual_sizes,

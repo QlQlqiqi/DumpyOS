@@ -174,6 +174,9 @@ public:
     int partition_id = -1;
     vector<int> offsets{};
 
+    // 计算该节点的 children 节点之和
+    int GetChildrenTotalSize() const;
+
     FADASNode *route(const unsigned short *_sax);
     FADASNode* routeFuzzySeries(const unsigned short *_sax);
     static FADASNode *BuildIndex(string &datafn, string &saxfn);
