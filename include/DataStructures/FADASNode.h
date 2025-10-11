@@ -220,6 +220,7 @@ public:
     void search_offset(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap, const string &index_dir) const;
 
     static void TraverseBFS(const FADASNode *root);
+    static void TraverseDFS(const FADASNode *root, const int depth = 0);
     static FADASNode*  BuildIndexFuzzy(const string & datafn, const string & saxfn, const string &paafn, vector<vector<int>>* g);
 
     friend class boost::serialization::access;

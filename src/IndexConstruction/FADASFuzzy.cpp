@@ -444,6 +444,7 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
       // QlQlqiqi: 需要先记录每个 node 的 leaf node num，便于 print debug info
       root->getLeafNodeNum();
       FADASNode::TraverseBFS(root);
+      FADASNode::TraverseDFS(root);
     }
     return root;
 }
@@ -451,8 +452,8 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
 void FADASNode::TraverseBFS(const FADASNode *root) {
   // 输出每层 node 的 ts num
   std::queue<std::pair<size_t, const FADASNode *>> que;
-  que.emplace(std::make_pair(1, root));
-  size_t last_depth = 0;
+  que.emplace(std::make_pair(0, root));
+  size_t last_depth = -1;
   while (!que.empty()) {
     auto [depth, node] = que.front();
     que.pop();
@@ -461,9 +462,7 @@ void FADASNode::TraverseBFS(const FADASNode *root) {
       printf("\n");
       printf("depth: [%zu]", depth);
     }
-    if (!node->isInternalNode()) {
-      printf(", %d", node->size);
-    }
+    printf(", (%d, %s)", node->size, node->isInternalNode()? "internal": "leaf");
     for (const auto &child : node->children) {
       if (!child) {
         continue;
@@ -472,6 +471,26 @@ void FADASNode::TraverseBFS(const FADASNode *root) {
     }
   }
   printf("\n");
+}
+
+void FADASNode::TraverseDFS(const FADASNode *root, const int depth) {
+  if (!root) {
+    return;
+  }
+  // 输出 root 树形结构
+  if (depth >= 1) {
+    auto tmp_depth = depth - 1;
+    while (tmp_depth--) {
+      printf("  ");
+    }
+    printf("|-");
+  }
+  printf("%d\n", root->size);
+  if (root->isInternalNode()) {
+    for (const auto &child : root->children) {
+      TraverseDFS(child, depth + 1);
+    }
+  }
 }
 
 void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &navigating_tbl, vector<vector<int>> *g) {
