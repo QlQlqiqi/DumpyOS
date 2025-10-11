@@ -1035,6 +1035,8 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     if (!Const::read_file_while_search) {
       f = fopen(Const::queryfn.c_str(), "rb");
       fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+      int query_num = FileUtil::readInt(f);
+      assert(query_num == Const::query_num);
       querys.resize(Const::query_num, std::vector<float>(Const::tsLength));
       for (auto &query : querys) {
         FileUtil::readSeries(f, query.data());

@@ -114,6 +114,12 @@ float * FileUtil::readSeries(FILE* f, float *ts){
     return ts;
 }
 
+int FileUtil::readInt(FILE *f) {
+    int num = 0;
+    fread(&num, sizeof(int), 1, f);
+    return num;
+}
+
 float * FileUtil::readSeries(FILE* f){
     auto *ts = new float[Const::tsLength];
     fread(ts, sizeof(float), Const::tsLength, f);

@@ -399,6 +399,7 @@ void FADASSearcher::approxSearchInterNode(FADASNode *root, TimeSeries *queryTs, 
     }
 
     // we only concern whether the nearest node is a leaf or an internal node
+    printf("min_dist: %f\n", min_dist);
     if(node->isInternalNode()){
         approxSearchInterNode(node, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
         return;

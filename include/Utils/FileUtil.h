@@ -23,6 +23,8 @@ public:
 
     static float *readSeries(FILE *f, float *ts);
 
+    static int readInt(FILE *f);
+
     static float *readSeries(FILE *f);
 
     static void writeSeries(FILE *f, float *ts);
