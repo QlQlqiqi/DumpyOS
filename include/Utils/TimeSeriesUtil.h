@@ -33,6 +33,10 @@ public:
     static double GetAP(const vector<PqItemSeries *> *approx,
                         const vector<float *> *res);
 
+    // 得到宽松模式的 recall
+    static double GetLenientModeRecall(const vector<PqItemSeries *> *approx,
+                                       const vector<float *> *res);
+
     static string timeSeries2Line(float* timeSeries) {
         string sb;
         for (int i=0; i < Const::tsLength; ++i) {

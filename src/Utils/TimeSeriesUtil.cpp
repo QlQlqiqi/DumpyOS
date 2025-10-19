@@ -142,6 +142,30 @@ double TimeSeriesUtil::GetAP(const vector<PqItemSeries *> *approx,
   return ap;
 }
 
+double TimeSeriesUtil::GetLenientModeRecall(const vector<PqItemSeries *> *approx,
+                                            const vector<float *> *res) {
+  auto approx_sz = approx->size();
+  assert(approx_sz <= res->size());
+
+  size_t hit_num = 0;
+  const auto begin = res->begin();
+  const auto end = begin + approx_sz;
+  size_t idx = 0;
+  while (idx < approx_sz) {
+    const auto &item = approx->at(idx);
+    bool found = false;
+    for (auto it = begin; it != end; it++) {
+      if (isSame(item, *it)) {
+        hit_num++;
+        break;
+      }
+    }
+    idx++;
+  }
+
+  return 1.0 * hit_num / approx_sz;
+}
+
 // int TimeSeriesUtil::intersectionTsSetsCardinality(const
 // vector<PqItemSeriesVector *> *tsSet1, vector<float *> *tsSet2){
 //     int intersectionNum = 0, size= tsSet1->size();

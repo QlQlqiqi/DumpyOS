@@ -1051,6 +1051,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
         for(int k:ks){
             int recallNums[maxExprRound];
             double mAP[maxExprRound];
+            double lenientModeRecall[maxExprRound];
             int search_number[maxExprRound];
             int layers[maxExprRound];
             long duration[maxExprRound];
@@ -1091,6 +1092,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 layers[curRound] = layer;
                 recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
                 mAP[curRound] = TimeSeriesUtil::GetAP(approxKnn, exactKnn);
+                lenientModeRecall[curRound] = TimeSeriesUtil::GetLenientModeRecall(approxKnn, exactKnn);
                 search_number[curRound] = _search_num;
                 error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
                 inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
@@ -1121,6 +1123,14 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
             }
             mAP_score /= maxExprRound;
             printf("mAP is: %.2f\%\n", mAP_score * 100);
+
+            double avg_lenient_mode_recall = 0;
+            for (auto recall : lenientModeRecall) {
+              avg_lenient_mode_recall += recall;
+            }
+            avg_lenient_mode_recall /= maxExprRound;
+            printf("avg recall in lenient mode is: %.2f\%\n",
+                   avg_lenient_mode_recall * 100);
 
             // cout << endl;
             // for(int _:layers)   cout << _ << ",";
