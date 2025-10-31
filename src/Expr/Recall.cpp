@@ -173,13 +173,16 @@ vector<float*>* Recall::getResult(const string& fn, int queryNo, int k){
   // 读对应的 ts
   FILE *data_f = fopen(Const::datafn.c_str(), "r");
   auto *res = new vector<float *>(k);
+//   printf("query idx: %d\n", queryNo);
   for (int i = 0; i < k; ++i) {
+    // printf("answer idx: %d, ", res_idxs[i]);
     size_t off = Const::tsLengthBytes * res_idxs[i];
     fseek(data_f, off, SEEK_SET);
     auto *ts = new float[Const::tsLength];
     fread(ts, sizeof(float), Const::tsLength, data_f);
     (*res)[i] = ts;
   }
+//   printf("\n");
   fclose(data_f);
 
   return res;
@@ -1109,6 +1112,25 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 search_number[curRound] = _search_num;
                 error_ratio[curRound] = MathUtil::errorRatio(*approxKnn, exactKnn2, k);
                 inv_error_ratio[curRound] = MathUtil::invertedErrorRatio(*approxKnn, exactKnn2, k);
+
+                if (Const::debug_is_print_query_answer) {
+                  printf("query_idx: %d\n", curRound);
+                  for (int i = 0; i < Const::tsLength; i++) {
+                    printf("%f, ", query[i]);
+                  }
+                  printf("\n");
+                  for (int idx = 0; idx < approxKnn->size(); idx++) {
+                    printf("answer_idx: %d, dist: %f\n", idx,
+                           approxKnn->at(idx)->dist);
+                    for (int i = 0; i < Const::tsLength; i++) {
+                      printf("%f, ", approxKnn->at(idx)->ts[i]);
+                    }
+                    printf("\n");
+                  }
+                  printf("\n");
+                  printf("ap: %f\n", mAP[curRound]);
+                }
+
 //                cout << curRound << ":"<<recallNums[curRound] << endl;
                 // cout << recallNums[curRound] << "," ;
                 fflush(stdout);

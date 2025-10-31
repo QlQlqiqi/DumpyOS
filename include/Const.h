@@ -26,7 +26,7 @@ public:
 //    constexpr const static double boundary_1st = 0.2, boundary = 0.15, filling_factor_1st = 0.8, filling_factor = 0.5;
 
     // sec:expr
-    static bool debug_print_node_split_info, is_pack_leafnode, is_fuzzy_copy;
+    static bool debug_is_print_query_answer,debug_print_node_split_info, is_pack_leafnode, is_fuzzy_copy;
     static string rootfn;
     static string dataset, method;
     static int tsLength, maxK, index, ops, materialized, method_code, query_num, series_num, k, dtw_window_size,
@@ -63,6 +63,11 @@ public:
             cout << "Can't load '.ini'\n";
             return;
         }
+        debug_is_print_query_answer =
+            reader.GetBoolean("expr", "debug_is_print_query_answer", false);
+        cout << "debug_is_print_query_answer: " << debug_is_print_query_answer
+             << endl;
+
         debug_print_node_split_info =
             reader.GetBoolean("expr", "debug_print_node_split_info", false);
         cout << "debug_print_node_split_info: " << debug_print_node_split_info
