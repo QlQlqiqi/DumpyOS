@@ -90,10 +90,6 @@ public:
         ops = reader.GetInteger("expr", "ops",-1);
         cout << "ops: " << ops<<endl;
 
-        maxK = reader.GetInteger("expr", "maxK", -1);
-        cout << "maxK: " << maxK << endl;
-        if(maxK == -1)  exit(-1);
-
         query_num = reader.GetInteger("expr", "query_num", -1);
         cout << "query_num: " << query_num << endl;
 
@@ -108,6 +104,10 @@ public:
 
         k = reader.GetInteger("expr", "k", -1);
         cout << "k: " << k << endl;
+
+        maxK = k;
+        cout << "maxK: " << maxK << endl;
+        if(maxK == -1)  exit(-1);
 
         thread_num = reader.GetInteger("expr", "thread_num", -1);
         cout << "thread_num: " << thread_num << endl;
@@ -297,7 +297,7 @@ public:
         fuzzyidxfn = rootfn + dataset + "/fuzzy/";
         char buf[1024];
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "%s-%zu-%zu-data-%zu.bin", dataset.data(), tag_idx_start,
+        sprintf(buf, "%s-%zu-%zu-data-%d.bin", dataset.data(), tag_idx_start,
                 series_num, tsLength);
         datafn = rootfn + dataset + "/data/" + std::string(buf);
         paafn = rootfn + dataset + "/paa/" + dataset + "-" +
@@ -313,13 +313,17 @@ public:
                 std::to_string(series_num / 1000) + "k_" +
                 std::to_string(segmentNum) + ".bin";
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "%s-%zu-%zu-%zu-query-%zu.bin", dataset.data(),
+        sprintf(buf, "%s-%zu-%zu-%zu-query-%d.bin", dataset.data(),
                 tag_idx_start, series_num, query_num, tsLength);
         queryfn = rootfn + dataset + "/query/" + std::string(buf);
-        resfn = rootfn + dataset + "/res/" + dataset + "-" +
-                std::to_string(tsLength) + "-" +
-                std::to_string(series_num / 1000) + "k_" +
-                std::to_string(segmentNum) + ".bin";
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "%s-%zu-%zu-%zu-groundtruth-%d-%d.ivecs", dataset.data(),
+                tag_idx_start, series_num, query_num, tsLength, k);
+        resfn = rootfn + dataset + "/res/" + std::string(buf);
+        // resfn = rootfn + dataset + "/res/" + dataset + "-" +
+        //         std::to_string(tsLength) + "-" +
+        //         std::to_string(series_num / 1000) + "k_" +
+        //         std::to_string(segmentNum) + ".bin";
     }
 
 };

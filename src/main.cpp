@@ -943,7 +943,7 @@ int main(int argc, char **argv) {
                 // generateQueryFile();
                 generateSax();
                 generatePaa();
-                generateGroundTruth();
+                // generateGroundTruth();
                 buildFADASFuzzy();
               }
             }

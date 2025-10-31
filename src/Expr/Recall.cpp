@@ -142,34 +142,47 @@ void reorder_query(float * query_ts, float * query_ts_reordered, int * query_ord
 //    fclose(f);
 //}
 
-void Recall::getResult(const string &fn, int queryNo, int k,
-                       std::vector<std::vector<float>> &res) {
-  // auto * res = new vector<float*>(k);
-  res.resize(k);
-  FILE *f = fopen(fn.c_str(), "rb");
-  long off = (long)queryNo * Const::tsLengthBytes * Const::maxK;
-  fseek(f, off, SEEK_SET);
-  for (int i = 0; i < k; ++i) {
-    res[i].resize(Const::tsLength);
-    ;
-    fread(res[i].data(), sizeof(float), Const::tsLength, f);
-  }
-  fclose(f);
-}
-
 vector<float*>* Recall::getResult(const string& fn, int queryNo, int k){
-    auto * res = new vector<float*>(k);
-    FILE *f= fopen(fn.c_str(), "rb");
-    long off = (long)queryNo * Const::tsLengthBytes * Const::maxK;
-    fseek(f, off, SEEK_SET);
-    for(int i=0;i<k;++i)
-    {
-        auto *ts = new float [Const::tsLength];
-        fread(ts, sizeof(float ), Const::tsLength, f);
-        (*res)[i] = ts;
-    }
-    fclose(f);
-    return res;
+//   {
+//     auto *res = new vector<float *>(k);
+//     FILE *f = fopen(fn.c_str(), "rb");
+//     long off = (long)queryNo * Const::tsLengthBytes * Const::maxK;
+//     fseek(f, off, SEEK_SET);
+//     for (int i = 0; i < k; ++i) {
+//       auto *ts = new float[Const::tsLength];
+//       fread(ts, sizeof(float), Const::tsLength, f);
+//       (*res)[i] = ts;
+//     }
+//     fclose(f);
+//     return res;
+//   }
+
+  FILE *f = fopen(fn.c_str(), "rb");
+  long off = (long)queryNo * ((Const::maxK + 1) * sizeof(int));
+  fseek(f, off, SEEK_SET);
+
+  std::vector<int> res_idxs;
+  // 先读答案的下标
+  int res_num;
+  fread(&res_num, sizeof(int), 1, f);
+  assert(res_num == k);
+  res_idxs.resize(res_num);
+  fread(res_idxs.data(), sizeof(int), res_num, f);
+  fclose(f);
+
+  // 读对应的 ts
+  FILE *data_f = fopen(Const::datafn.c_str(), "r");
+  auto *res = new vector<float *>(k);
+  for (int i = 0; i < k; ++i) {
+    size_t off = Const::tsLengthBytes * res_idxs[i];
+    fseek(data_f, off, SEEK_SET);
+    auto *ts = new float[Const::tsLength];
+    fread(ts, sizeof(float), Const::tsLength, data_f);
+    (*res)[i] = ts;
+  }
+  fclose(data_f);
+
+  return res;
 }
 
 //void Recall::doExprWithRes(Graph* g){

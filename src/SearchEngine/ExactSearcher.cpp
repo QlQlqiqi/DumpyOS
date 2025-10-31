@@ -166,6 +166,8 @@ struct TempSeriesMinHeap{
 void ExactSearcher::groundTruthKnnSearch(const string &fn, const string &queryfn, int k, int query_num, const string &output,
                                          int series_num) {
     FILE  *qf = fopen(queryfn.c_str(), "rb");
+    int num = 0;
+    fread(&num, sizeof(int), 1, qf);
     auto *queries = new float [query_num * Const::tsLength];
     fread(queries, sizeof(float ), (long)query_num * Const::tsLength, qf);
     fclose(qf);
@@ -220,8 +222,19 @@ void ExactSearcher::groundTruthKnnSearch(const string &fn, const string &queryfn
     f = fopen(output.c_str(), "wb");
     for(int j=0; j < query_num; ++j){
         // cout << j << ": " << heaps[j].size() << endl;
+        // printf("query_idx: %d\n", j);
+        // auto query = queries + j * Const::tsLength;
+        // for(int i = 0; i < Const::tsLength; i++) {
+        //     printf("%f, ", query[i]);
+        // }
+        // printf("\n");
         for(auto *tmps:heaps[j]){
             fwrite(tmps->ts, sizeof(float ), Const::tsLength, f);
+            // printf("ts(dist: %f): ", tmps->dist);
+            // for(int i = 0; i < Const::tsLength; i++) {
+            //     printf("%f, ", tmps->ts[i]);
+            // }
+            // printf("\n");
         }
     }
     fclose(f);
