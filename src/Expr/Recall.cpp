@@ -1031,23 +1031,27 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     int thresholds[]{10000};
     cout << fixed  << setprecision(3) << endl;
     float *query;
-    FILE *f = nullptr;
     long offset = 0;
-    std::vector<std::vector<float>> querys;
-    if (!Const::read_file_while_search) {
-      f = fopen(Const::queryfn.c_str(), "rb");
-      fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
-      int query_num = Const::query_num;
-    // assert(query_num == Const::query_num);
-      querys.resize(Const::query_num, std::vector<float>(Const::tsLength));
-      for (auto &query : querys) {
-        FileUtil::readSeries(f, query.data());
-      }
-      fclose(f);
-    } else {
-      f = fopen(Const::queryfn.c_str(), "rb");
-      fseek(f, offset * Const::tsLengthBytes, SEEK_SET);
+    // todo(QlQlqiqi): 尚未适配
+    assert(!Const::read_file_while_search);
+    int query_num = Const::query_num;
+
+    // 先读 query_idxs
+    FILE *query_infile = fopen(Const::queryfn.c_str(), "rb");
+    std::vector<uint32_t> query_idxs(query_num);
+    fread(query_idxs.data(), sizeof(uint32_t), query_num, query_infile);
+    fclose(query_infile);
+    // 再读 query 内容
+    FILE *data_infile = fopen(Const::datafn.c_str(), "rb");
+    std::vector<std::vector<float>> querys(
+        query_num, std::vector<float>(Const::tsLength, 0));
+    for (int i = 0; i < query_num; i++) {
+      auto query_idx = query_idxs[i];
+      fseek(data_infile, query_idx * Const::tsLengthBytes, SEEK_SET);
+      FileUtil::readSeries(data_infile, querys[i].data());
     }
+    fclose(data_infile);
+
     for(int threshold:thresholds){
         int _k = 0;
         for(int k:ks){
@@ -1070,11 +1074,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
                 _search_num = 0;
-                if (Const::read_file_while_search) {
-                  query = FileUtil::readSeries(f);
-                } else {
-                  query = querys[curRound].data();
-                }
+                query = querys[curRound].data();
                 reorder_query(query, query_reordered, ordering);
                 auto start = MyTimer::Now();
                 vector<PqItemSeries*> *approxKnn = FADASSearcher::approxSearch(root, query, k, g, index_dir, query_reordered,
@@ -1174,14 +1174,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
               <<"And QPS = "<< 1000000.0 / total_duration <<endl;
             // for(int _:search_number)    cout << _ <<",";
             // cout << endl;
-            if (Const::read_file_while_search) {
-              rewind(f);
-            }
         }
-    }
-
-    if (Const::read_file_while_search) {
-      fclose(f);
     }
 }
 
