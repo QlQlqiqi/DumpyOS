@@ -153,7 +153,7 @@ vector<float *> *Recall::getResult(const string &fn, int queryNo, int k) {
   //   fread(&res_num, sizeof(int), 1, f);
   //   assert(res_num == k);
   res_idxs.resize(k);
-  fread(res_idxs.data(), sizeof(int), k, f);
+  fread(res_idxs.data(), sizeof(uint32_t), k, f);
   fclose(f);
 
   // 读对应的 ts
