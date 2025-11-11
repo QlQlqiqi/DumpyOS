@@ -283,7 +283,7 @@ TARGNode * TARGNode::route(string& invsax, int *ret_pid){
         return this;
     }
     string key = SaxUtil::invSaxHeadKFromInvSax(invsax, layer + 1);
-    if(children.contains(key)){
+    if(children.find(key) != children.end()){
         return children[key]->route(invsax, ret_pid);
     }else{
         *ret_pid = -1;
@@ -343,7 +343,7 @@ void TARGNode::addTreeNodeHexRobust(TARGNode* start){
         start->children[invSAX] = this;
     }else{
         if(layer > start->layer){
-            if(!start->children.contains(SaxUtil::invSaxHeadKFromInvSax(invSAX, start->layer + 1))){
+            if(!(start->children.find(SaxUtil::invSaxHeadKFromInvSax(invSAX, start->layer + 1)) != start->children.end())){
                 string newkey = SaxUtil::invSaxHeadKFromInvSax(invSAX, start->layer + 1);
                 auto newNode = new TARGNode();
                 newNode->layer = start->layer + 1;
@@ -455,7 +455,7 @@ vector<unordered_map<string, int>*>* TARGNode::buildTARGbySampling(unordered_map
             delete pairRDD;
             pairRDD = new unordered_map<string, int>();
             for(auto &iter: *dataRDD){
-                if(!smallHashSet.contains(iter.second.invsax_full)){
+                if(!(smallHashSet.find(iter.second.invsax_full) != smallHashSet.end())){
                     (*pairRDD)[iter.first] = iter.second.freq;
                 }
             }

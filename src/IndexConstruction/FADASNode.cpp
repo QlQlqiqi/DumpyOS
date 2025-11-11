@@ -7,6 +7,7 @@
 #include <cmath>
 #include <bitset>
 #include <unordered_map>
+#include <atomic>
 //#include "liburing.h"
 #include "../../include/DataStructures/FADASNode.h"
 #include "../../include/Utils/FileUtil.h"
@@ -731,7 +732,7 @@ void materialize1stLayerWithSax(string datafn, FADASNode* root, int *navids, str
     Const::logPrint("Start move sax to disk file in 1st layer.");
     unordered_set<FADASNode*>visited;
     for(auto &child:root->children){
-        if(child == nullptr || child->size > Const::th || visited.contains(child))  continue;
+        if(child == nullptr || child->size > Const::th || visited.find(child) != visited.end())  continue;
         visited.insert(child);
         long symbol_num = (long)child->size * Const::segmentNum;
         auto to_write = new unsigned short[symbol_num];
@@ -837,7 +838,7 @@ void materialize1stLayerWithSaxOnlyLeaf(string datafn, FADASNode* root, int *nav
     Const::logPrint("Start move sax to disk file in 1st layer.");
     unordered_set<FADASNode*>visited;
     for(auto &child:root->children){
-        if(child == nullptr || child->size > Const::th || visited.contains(child))  continue;
+        if(child == nullptr || child->size > Const::th || visited.find(child) != visited.end())  continue;
         visited.insert(child);
         long symbol_num = (long)child->size * Const::segmentNum;
         auto to_write = new unsigned short[symbol_num];
@@ -944,7 +945,7 @@ void materialize1stLayerWithSaxOnlyLeaf2(string datafn, FADASNode* root, int *na
     Const::logPrint("Start move sax to disk file in 1st layer.");
     unordered_set<FADASNode*>visited;
     for(auto &child:root->children){
-        if(child == nullptr || child->size > Const::th || visited.contains(child))  continue;
+        if(child == nullptr || child->size > Const::th || visited.find(child) != visited.end())  continue;
         visited.insert(child);
         long symbol_num = (long)child->size * Const::segmentNum;
         auto to_write = new unsigned short[symbol_num];
@@ -2889,7 +2890,7 @@ void FADASNode::reorganize(float * tss, FADASNode* parent){
         unordered_set<FADASNode*>visited;
         for(FADASNode* child: children){
             if(child == nullptr)    continue;
-            if(visited.contains(child)) continue;
+            if(visited.find(child) != visited.end()) continue;
             child->reorganize(tss, this);
             visited.insert(child);
         }
@@ -4342,7 +4343,7 @@ FADASNode::visitPlanFromBaseTable(unordered_set<int> &visited, int cur_lambda, c
         int reset_pos = plan[i];
         // get the whole plan code
         int cur_whole_mask = mask_code - (1 << (Const::segmentNum - 1  - reset_pos));
-        if(visited.contains(cur_whole_mask))
+        if(visited.find(cur_whole_mask) != visited.end())
             continue;
         visited.insert(cur_whole_mask);
         // get the new plan
@@ -4516,7 +4517,7 @@ FADASNode::visitPlanFromBaseTableCluster(unordered_set<int> &visited, int cur_la
         int reset_pos = plan[i];
         // get the whole plan code
         int cur_whole_mask = mask_code - (1 << (Const::segmentNum - 1  - reset_pos));
-        if(visited.contains(cur_whole_mask))
+        if(visited.find(cur_whole_mask) != visited.end())
             continue;
         visited.insert(cur_whole_mask);
         // get the new plan
@@ -4712,7 +4713,7 @@ FADASNode::visitPlanFromBaseTableWeakCluster(unordered_set<int> &visited, int cu
         int reset_pos = plan[i];
         // get the whole plan code
         int cur_whole_mask = mask_code - (1 << (Const::segmentNum - 1  - reset_pos));
-        if(visited.contains(cur_whole_mask))
+        if(visited.find(cur_whole_mask) != visited.end())
             continue;
         visited.insert(cur_whole_mask);
         // get the new plan

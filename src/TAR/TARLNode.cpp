@@ -173,7 +173,7 @@ void TARLNode::addRecordORIGIN(const ser_item &data, int pid) {
         buffer.push_back(newitem);
     }else{
         string new_key = SaxUtil::invSaxHeadKFromInvSax(data.invsax, layer + 1);
-        if(!descendants.contains(new_key)){
+        if(!(descendants.find(new_key) != descendants.end())){
             auto node = new TARLNode();
             node->layer = layer + 1;
             node->invSAX = new_key;
@@ -286,7 +286,7 @@ TARLNode* TARLNode::prueSingleElementLayer(TARLNode* root){
 TARLNode* TARLNode::route2Leaf(string& invsax){
     if(descendants.empty()) return this;
     string key = SaxUtil::invSaxHeadKFromInvSax(invsax, layer + 1);
-    if(descendants.contains(key)){
+    if(descendants.find(key) != descendants.end()){
         return descendants[key]->route2Leaf(invsax);
     }else{
         // if no target leaf node, then search its sibling randomly

@@ -197,7 +197,7 @@ vector<PqItemSeries *> * TARSearcher::exactSearch(TARGNode *root, float *query, 
             for(auto &iter:cur.node->children)
                 // leaf node
                 if(iter.second->children.empty()){
-                    if(visited.contains(iter.second->pid) || iter.second->pid == target_pack)   continue;
+                    if(visited.find(iter.second->pid) != visited.end() || iter.second->pid == target_pack)   continue;
                     pq.insert(PqItemTAR(iter.second, cur.dist));
                     visited.insert(iter.second->pid);
                 } else{ // internal node
@@ -252,7 +252,7 @@ vector<PqItemSeries *> * TARSearcher::ngSearch(TARGNode *root, float *query, int
             for(auto &iter:cur.node->children)
                 // leaf node
                 if(iter.second->children.empty()){
-                    if(visited.contains(iter.second->pid) || iter.second->pid == target_pack)   continue;
+                    if(visited.find(iter.second->pid) != visited.end() || iter.second->pid == target_pack)   continue;
                     pq.insert(PqItemTAR(iter.second, cur.dist));
                     visited.insert(iter.second->pid);
                 } else{ // internal node
@@ -309,7 +309,7 @@ vector<PqItemSeries *> * TARSearcher::exactSearchDTW(TARGNode *root, float *quer
             for(auto &iter:cur.node->children)
                 // leaf node
                 if(iter.second->children.empty()){
-                    if(visited.contains(iter.second->pid) || iter.second->pid == target_pack)   continue;
+                    if(visited.find(iter.second->pid) != visited.end() || iter.second->pid == target_pack)   continue;
                     pq.insert(PqItemTAR(iter.second, cur.dist));
                     visited.insert(iter.second->pid);
                 } else{ // internal node
@@ -376,7 +376,7 @@ void TARSearcher::incSearchLocal(TARLNode *l_root, vector<PqItemSeries *> *heap,
     }
     if(cur_leaf_node_num > *node_num){
         string key = SaxUtil::invSaxHeadKFromInvSax(query_invsax_str, l_root->layer + 1);
-        if(l_root->descendants.contains(key)){
+        if(l_root->descendants.find(key) != l_root->descendants.end()){
             incSearchLocal(l_root->descendants[key], heap, k, query, node_num, query_invsax_str);
         }
         if(*node_num > 0){
