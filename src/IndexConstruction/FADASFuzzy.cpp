@@ -4,6 +4,7 @@
 
 #include "../../include/DataStructures/FADASNode.h"
 #include "../../include/Utils/FileUtil.h"
+#include "../../include/MyTimer.h"
 #include "../../include/Utils/MathUtil.h"
 #include <cassert>
 #include <cstdio>
@@ -418,6 +419,8 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     Const::logPrint("Fuzzy series number is " + to_string(fuzzy_num));
     Const::logPrint("build index successfully!");
     auto end_t = chrono::system_clock::now();
+    cout << "Total time cost of choosing segment is "
+         << MyTimer::choose_seg_timecout_us_ / 1000 << "ms." << endl;
     cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
     cout << "Building sax and paa total time is " << SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
         << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;
@@ -501,7 +504,13 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
     NODE_RECORDER& parent_recorder = navigating_tbl[this];
 //    PAA_INFO* paa = statPaa();
 //    chooseSegment(paa, chosen_num);
-    determineSegments();
+    {
+      auto now = MyTimer::Now();
+      determineSegments();
+      auto duration =
+          MyTimer::Duration<std::chrono::microseconds>(now, MyTimer::Now());
+      MyTimer::choose_seg_timecout_us_ += duration.count();
+    }
 
     // statistic children information in order to partition
     partUnit nodes[power_2[chosen_num]];

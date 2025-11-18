@@ -20,6 +20,8 @@ public:
   // 单位 us
   static size_t search_timecount_us_;
   static size_t exact_search_timecount_us_;
+  // node split 时，选择出要分裂的 bit/seg 耗费的时间
+  static size_t choose_seg_timecout_us_;
 };
 
 // 记录一些次数
