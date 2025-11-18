@@ -426,13 +426,12 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     Const::logPrint("Fuzzy series number is " + to_string(fuzzy_num));
     Const::logPrint("build index successfully!");
     auto end_t = chrono::system_clock::now();
-    auto choose_plan_timecount_ms = MyTimer::choose_plan_timecount_us_ / 1000;
-    printf("Total time cost of choosing plan is %zums and total number of plan "
-           "is %zu. (%.2fms per plan)\n",
-           choose_plan_timecount_ms, MyCnt::try_plan_num_,
-           choose_plan_timecount_ms * 1.0 / MyCnt::try_plan_num_);
-    cout << "Total time cost of choosing segment is "
-         << MyTimer::choose_seg_timecount_us_ / 1000 << "ms." << endl;
+    auto choose_seg_timecount_ms = MyTimer::choose_seg_timecount_us_ / 1000;
+    printf("Total time cost of choosing segment is %zums and total number of "
+           "segment "
+           "is %zu. (%.2fms per segment)\n",
+           choose_seg_timecount_ms, MyCnt::try_plan_num_,
+           choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
     cout << "Total time cost of spliting node is "
          << MyTimer::node_split_us / 1000 << "ms." << endl;
     cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;

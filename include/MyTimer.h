@@ -24,8 +24,6 @@ public:
   static size_t node_split_us;
   // node split 时，选择出要分裂的 bit/seg 耗费的时间
   static size_t choose_seg_timecount_us_;
-  // choose seg 时，评估 plan 的耗时
-  static size_t choose_plan_timecount_us_;
 };
 
 // 记录一些次数

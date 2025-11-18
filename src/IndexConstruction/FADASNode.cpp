@@ -4128,7 +4128,6 @@ void FADASNode::determineSegments(){
     unordered_set<int>visited;
     double max_score = 0;
     vector<int> best_plan;
-    auto choose_plan_start = MyTimer::Now();
     for(int i=0;i<plan_num;++i){
         int *plan = FADASNode::combines[lambda_max][i];
         // first evaluate the whole plan
@@ -4160,9 +4159,6 @@ void FADASNode::determineSegments(){
     }
     // std::cout << "over" << std::endl;
     MyCnt::try_plan_num_ += plan_num;
-    auto choose_plan_duration =
-        MyTimer::Duration<std::chrono::microseconds>(choose_plan_start, MyTimer::Now());
-    MyTimer::choose_plan_timecount_us_ += choose_plan_duration.count();
 
     unordered_set<int>().swap(visited);
     vector<int>().swap(unit_size);
