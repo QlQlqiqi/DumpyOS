@@ -4159,6 +4159,7 @@ void FADASNode::determineSegments(){
         vector<int>().swap(plan_node_sizes);
     }
     // std::cout << "over" << std::endl;
+    MyCnt::try_plan_num_ += plan_num;
     auto choose_plan_duration =
         MyTimer::Duration<std::chrono::microseconds>(choose_plan_start, MyTimer::Now());
     MyTimer::choose_plan_timecount_us_ += choose_plan_duration.count();

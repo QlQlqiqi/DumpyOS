@@ -20,6 +20,8 @@ public:
   // 单位 us
   static size_t search_timecount_us_;
   static size_t exact_search_timecount_us_;
+  // growIndexFuzzy 耗时
+  static size_t node_split_us;
   // node split 时，选择出要分裂的 bit/seg 耗费的时间
   static size_t choose_seg_timecount_us_;
   // choose seg 时，评估 plan 的耗时
@@ -31,6 +33,8 @@ class MyCnt {
 public:
   // exact search 的 ts 数量
   static size_t exact_search_item_num;
+  // build index 时尝试的 plan 数量
+  static size_t try_plan_num_;
 };
 
 #endif

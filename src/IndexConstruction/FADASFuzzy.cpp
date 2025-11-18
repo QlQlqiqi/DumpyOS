@@ -378,7 +378,14 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
             auto*navigating_tbl = new unordered_map<FADASNode*, NODE_RECORDER>();
             navigating_tbl->emplace(root->children[i], NODE_RECORDER(nodeIn1stLayer[i].size, root->children[i]));
             DPNT.emplace(i, navigating_tbl);
-            root->children[i]->growIndexFuzzy(*navigating_tbl, g);
+            {
+              auto start = MyTimer::Now();
+              root->children[i]->growIndexFuzzy(*navigating_tbl, g);
+              auto node_split_duration =
+                  MyTimer::Duration<std::chrono::microseconds>(start,
+                                                               MyTimer::Now());
+              MyTimer::node_split_us += node_split_duration.count();
+            }
 
             finished_series += nodeIn1stLayer[i].size;
             double percent = (double)finished_series / (double)internal_size;
@@ -419,10 +426,15 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     Const::logPrint("Fuzzy series number is " + to_string(fuzzy_num));
     Const::logPrint("build index successfully!");
     auto end_t = chrono::system_clock::now();
-    cout << "Total time cost of choosing plan is "
-         << MyTimer::choose_plan_timecount_us_ / 1000 << "ms." << endl;
+    auto choose_plan_timecount_ms = MyTimer::choose_plan_timecount_us_ / 1000;
+    printf("Total time cost of choosing plan is %zums and total number of plan "
+           "is %zu. (%.2fms per plan)\n",
+           choose_plan_timecount_ms, MyCnt::try_plan_num_,
+           choose_plan_timecount_ms * 1.0 / MyCnt::try_plan_num_);
     cout << "Total time cost of choosing segment is "
          << MyTimer::choose_seg_timecount_us_ / 1000 << "ms." << endl;
+    cout << "Total time cost of spliting node is "
+         << MyTimer::node_split_us / 1000 << "ms." << endl;
     cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
     cout << "Building sax and paa total time is " << SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
         << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;

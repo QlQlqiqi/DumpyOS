@@ -2,7 +2,9 @@
 
 size_t MyTimer::search_timecount_us_ = 0;
 size_t MyTimer::exact_search_timecount_us_ = 0;
+size_t MyTimer::node_split_us = 0;
 size_t MyTimer::choose_seg_timecount_us_ = 0;
 size_t MyTimer::choose_plan_timecount_us_ = 0;
 
 size_t MyCnt::exact_search_item_num = 0;
+size_t MyCnt::try_plan_num_ = 0;
