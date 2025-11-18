@@ -428,8 +428,8 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     auto end_t = chrono::system_clock::now();
     auto choose_seg_timecount_ms = MyTimer::choose_seg_timecount_us_ / 1000;
     printf("Total time cost of choosing segment is %zums and total number of "
-           "segment "
-           "is %zu. (%.2fms per segment)\n",
+           "plan "
+           "is %zu. (%.2fms per plan)\n",
            choose_seg_timecount_ms, MyCnt::try_plan_num_,
            choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
     cout << "Total time cost of spliting node is "
