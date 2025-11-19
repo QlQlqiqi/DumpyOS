@@ -5,6 +5,7 @@
 #include <thread>
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <bitset>
 #include <unordered_map>
 #include <atomic>
@@ -4076,7 +4077,30 @@ void FADASNode::determineSegmentsNaive() {
     chosenSegments.assign(chosen.begin(),  chosen.end());
 }
 // determine fan-out and choose segments
-void FADASNode::determineSegments(){
+void FADASNode::determineSegments() {
+    switch(Const::simulate_type) {
+        case 0: {
+            // Dumpy
+            determineSegmentsDumpy();
+            break;
+        }
+        case 1: {
+            // TARDIS
+            determineSegmentsTardis();
+            break;
+        }
+        case 2: {
+            // iSAX2+
+            determineSegmentsISAX2plus();
+            break;
+        }
+        default: {
+            assert(false);
+        }
+    }
+}
+
+void FADASNode::determineSegmentsDumpy(){
     int lambda_min, lambda_max;
     determineFanout(&lambda_min, &lambda_max);
     if(lambda_min == Const::segmentNum && lambda_max == Const::segmentNum){
@@ -4163,6 +4187,50 @@ void FADASNode::determineSegments(){
     unordered_set<int>().swap(visited);
     vector<int>().swap(unit_size);
     chosenSegments = best_plan;
+}
+
+void FADASNode::determineSegmentsTardis() {
+    chosenSegments.clear();
+    // 1、是 full-ary，每次选择全部的 seg 进行 split。
+    // 2、如果某个 seg 不能划分了，那么就选择剩下的 seg 进行 split。
+    for (int i = 0; i < Const::segmentNum; i++) {
+      // 还有未划分的 bit
+      if (bits_cardinality[i] < Const::bitsCardinality) {
+        chosenSegments.emplace_back(i);
+      }
+    }
+    MyCnt::try_plan_num_++;
+}
+
+void FADASNode::determineSegmentsISAX2plus() {
+  chosenSegments.clear();
+  // 1、是 binary-ary，每次选择一个 seg 进行 split。
+  // 2、进行 node split 时，计算每个可以划分的 seg 中的 sax 的均值
+  // μ，然后计算每个 seg 对应的均值 μ 距离其最近的 breakpoint 的距离
+  // dist，选择 dist 最小的 seg 作为要划分的 seg。
+  double min_dist = std::numeric_limits<double>::max();
+  int target_seg = 0;
+  for (int seg = 0; seg < Const::segmentNum; seg++) {
+    // 如果这个 seg 不能划分了，则放弃
+    if (bits_cardinality[seg] == Const::bitsCardinality) {
+      continue;
+    }
+    MyCnt::try_plan_num_++;
+    double mean_u = 0;
+    for (int offset : offsets) {
+      float *cur_paa = paas + offset * Const::segmentNum;
+      mean_u += cur_paa[seg];
+    }
+    mean_u /= offsets.size();
+    // 找到最近的 breakpoints
+    for (int i = 0; i < Const::segmentNum; i++) {
+      auto dist = std::fabs(SaxUtil::breakpoints[i] - mean_u);
+      if (dist < min_dist) {
+        target_seg = seg;
+      }
+    }
+  }
+  chosenSegments.emplace_back(target_seg);
 }
 
 void FADASNode::determineSegments2(){

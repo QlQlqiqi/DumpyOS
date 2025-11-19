@@ -271,6 +271,10 @@ public:
     void searchLessPack(int k, TimeSeries *queryTs, vector<PqItemSeries *> &heap, const string &index_dir) const;
 
     void determineSegments();
+    // Dumpy 的选择策略
+    void determineSegmentsDumpy();
+    void determineSegmentsTardis();
+    void determineSegmentsISAX2plus();
 
     void determineSegments2();
 

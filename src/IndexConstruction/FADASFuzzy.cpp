@@ -431,7 +431,9 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
            "plan "
            "is %zu. (%.2fms per plan)\n",
            choose_seg_timecount_ms, MyCnt::try_plan_num_,
-           choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
+           MyCnt::try_plan_num_ == 0
+               ? 0
+               : choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
     cout << "Total time cost of spliting node is "
          << MyTimer::node_split_us / 1000 << "ms." << endl;
     cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
@@ -523,7 +525,17 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
       auto duration =
           MyTimer::Duration<std::chrono::microseconds>(now, MyTimer::Now());
       MyTimer::choose_seg_timecount_us_ += duration.count();
+    //   assert(chosen_num<=chosenSegments.size());
     }
+    // 对于 TARDIS 和 iSAX2+ 来说，需要注意选择的 seg 数量
+    if (Const::simulate_type == 1 || Const::simulate_type == 2) {
+      chosen_num = chosenSegments.size();
+    }
+
+    // 如果不能划分了，则放弃
+    // if (chosen_num == 0 || chosenSegments.empty()) {
+    //   return;
+    // }
 
     // statistic children information in order to partition
     partUnit nodes[power_2[chosen_num]];
@@ -569,7 +581,8 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
 //            node.pid = ++partNum;
 
 
-    FADASNode* leafChildrenList[partNum];
+    auto leafChildrenList = new FADASNode*[partNum];
+    // FADASNode* leafChildrenList[partNum];
     for(int i=0;i<partNum;++i) {
         leafChildrenList[i] = new FADASNode(this, i);
         navigating_tbl.emplace(leafChildrenList[i], NODE_RECORDER());
@@ -595,6 +608,7 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
                 navigating_tbl[children[i]].series_index_list.push_back(series_index_list[i][j]);
         }
     }
+    delete []leafChildrenList;
 
     auto end = chrono::system_clock::now();
     GROW_CPU_TIME += chrono::duration_cast<chrono::microseconds>(end - start).count();

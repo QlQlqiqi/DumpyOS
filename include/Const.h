@@ -29,8 +29,10 @@ public:
     static bool debug_is_print_query_answer,debug_print_node_split_info, is_pack_leafnode, is_fuzzy_copy;
     static string rootfn;
     static string dataset, method;
-    static int tsLength, maxK, index, ops, materialized, method_code, query_num, series_num, k, dtw_window_size,
-    batch_size, batch_num, pre_read, read_file_while_search, thread_num, messi_pq_num, SSD_pq_num;
+    static int simulate_type, tsLength, maxK, index, ops, materialized,
+        method_code, query_num, series_num, k, dtw_window_size, batch_size,
+        batch_num, pre_read, read_file_while_search, thread_num, messi_pq_num,
+        SSD_pq_num;
     static double dtw_window_percent;
 
     //sec: parameter
@@ -63,6 +65,12 @@ public:
             cout << "Can't load '.ini'\n";
             return;
         }
+
+        simulate_type = reader.GetInteger("expr", "simulate_type", 0);
+        cout << "simulate_type: " << simulate_type << endl;
+        assert(simulate_type >= 0);
+        assert(simulate_type <= 2);
+
         debug_is_print_query_answer =
             reader.GetBoolean("expr", "debug_is_print_query_answer", false);
         cout << "debug_is_print_query_answer: " << debug_is_print_query_answer

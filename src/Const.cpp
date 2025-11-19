@@ -9,7 +9,7 @@ bool Const::debug_is_print_query_answer = false,
      Const::is_fuzzy_copy = true;
 std::string Const::rootfn = "";
 string Const::dataset = "",Const:: method = "";
-int Const::tsLength = -1, Const::maxK = -1, Const::index = -1, Const::ops = -1, Const::materialized = -1,
+int Const::simulate_type = -1, Const::tsLength = -1, Const::maxK = -1, Const::index = -1, Const::ops = -1, Const::materialized = -1,
 Const::method_code = -1, Const::query_num = -1, Const::series_num = -1, Const::k = -1, Const::dtw_window_size = -1,
 Const::batch_size = -1, Const::batch_num = -1, Const::pre_read = -1, Const::read_file_while_search = -1, Const::thread_num = -1, Const::messi_pq_num = -1,
 Const::SSD_pq_num = -1;
