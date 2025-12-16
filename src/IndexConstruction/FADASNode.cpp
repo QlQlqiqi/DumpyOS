@@ -4210,6 +4210,8 @@ void FADASNode::determineSegmentsISAX2plus() {
   // dist，选择 dist 最小的 seg 作为要划分的 seg。
   double min_dist = std::numeric_limits<double>::max();
   int target_seg = 0;
+  int offset = ((Const::cardinality - 1) * (Const::cardinality - 2)) / 2;
+  auto breakpoints = SaxUtil::breakpoints + offset;
   for (int seg = 0; seg < Const::segmentNum; seg++) {
     // 如果这个 seg 不能划分了，则放弃
     if (bits_cardinality[seg] == Const::bitsCardinality) {
@@ -4223,9 +4225,13 @@ void FADASNode::determineSegmentsISAX2plus() {
     }
     mean_u /= offsets.size();
     // 找到最近的 breakpoints
-    for (int i = 0; i < Const::segmentNum; i++) {
-      auto dist = std::fabs(SaxUtil::breakpoints[i] - mean_u);
+    for (int i = 0; i < Const::cardinality - 1; i++) {
+      auto dist = std::fabs(breakpoints[i] - mean_u);
+      if (dist > min_dist) {
+        break;
+      }
       if (dist < min_dist) {
+        min_dist = dist;
         target_seg = seg;
       }
     }
