@@ -837,6 +837,8 @@ void statIndexFADASFuzzy(){
 int main(int argc, char **argv) {
     Const::readConfig();
     if(argc == 2) {
+        Const::index = 2;
+        Const::materialized = 1;
         if(strcmp(argv[1], "build") == 0) {
             Const::ops = 0;
         } else if(strcmp(argv[1], "search") == 0) {

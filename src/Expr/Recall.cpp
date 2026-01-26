@@ -145,7 +145,7 @@ void reorder_query(float * query_ts, float * query_ts_reordered, int * query_ord
 vector<float *> *Recall::getResult(const string &fn, int queryNo, int k) {
   assert(Const::k == k);
   FILE *f = fopen(fn.c_str(), "rb");
-  long off = (long)queryNo * (k * sizeof(int));
+  long off = (long)queryNo * (Const::MAX_TOPK * sizeof(int));
   fseek(f, off, SEEK_SET);
 
   std::vector<int> res_idxs;
@@ -1046,7 +1046,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     std::vector<std::vector<float>> querys(
         query_num, std::vector<float>(Const::tsLength, 0));
     for (int i = 0; i < query_num; i++) {
-      auto query_idx = query_idxs[i];
+      auto query_idx = query_idxs[i];   
       fseek(data_infile, query_idx * Const::tsLengthBytes, SEEK_SET);
       FileUtil::readSeries(data_infile, querys[i].data());
     }
@@ -1070,6 +1070,8 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
             MyTimer::search_timecount_us_ = 0;
             MyTimer::exact_search_timecount_us_ = 0;
             MyCnt::exact_search_item_num = 0;
+            MyCnt::exact_search_internal_node_num = 0;
+            MyCnt::exact_search_leaf_node_num = 0;
             for(int curRound = 0; curRound < maxExprRound; ++curRound){
                 //                    cout<<"Round : " + (curRound + 1));
                 c_nodes.clear();
@@ -1134,6 +1136,11 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                    MyTimer::search_timecount_us_ / maxExprRound);
             printf("exact time per search: %zuus\n",
                    MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+            printf("internal node num per search: %.2f\n",
+                   1.0 * MyCnt::exact_search_internal_node_num / maxExprRound);
+            printf("leaf node num per search: %.2f\n",
+                   1.0 * MyCnt::exact_search_leaf_node_num / maxExprRound);
 
             printf("ts num in per exact search: %zu\n",
                    MyCnt::exact_search_item_num / maxExprRound);
@@ -1748,6 +1755,8 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
         MyTimer::search_timecount_us_ = 0;
         MyTimer::exact_search_timecount_us_ = 0;
         MyCnt::exact_search_item_num = 0;
+        MyCnt::exact_search_internal_node_num = 0;
+        MyCnt::exact_search_leaf_node_num = 0;
         for(int curRound = 0; curRound < maxExprRound; ++curRound){
             //                    cout<<"Round : " + (curRound + 1));
             c_nodes.clear();
@@ -1796,6 +1805,11 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
                MyTimer::search_timecount_us_ / maxExprRound);
         printf("exact time per search: %zuus\n",
                MyTimer::exact_search_timecount_us_ / maxExprRound);
+
+        printf("internal node num per search: %.2f\n",
+               1.0 * MyCnt::exact_search_internal_node_num / maxExprRound);
+        printf("leaf node num per search: %.2f\n",
+               1.0 * MyCnt::exact_search_leaf_node_num / maxExprRound);
 
         printf("ts num in per exact search: %zu\n",
                MyCnt::exact_search_item_num / maxExprRound);

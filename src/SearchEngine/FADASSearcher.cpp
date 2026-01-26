@@ -97,9 +97,11 @@ vector<PqItemSeries *> * FADASSearcher::approxSearch(FADASNode *root, float *que
         // we only concern whether the nearest node is a leaf or an internal node
         if(node->isInternalNode()){
             approxSearchInterNode(node, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
+            MyCnt::exact_search_internal_node_num++;
         }else {
             node->search(k, queryTs, *heap, index_dir, query_reordered, ordering);
             targetNode = node;
+            MyCnt::exact_search_leaf_node_num++;
         }
     } else if (!cur->isInternalNode()) {
         auto start = MyTimer::Now();
@@ -108,10 +110,12 @@ vector<PqItemSeries *> * FADASSearcher::approxSearch(FADASNode *root, float *que
         auto duration =
             MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
         MyTimer::exact_search_timecount_us_ += duration.count();
+        MyCnt::exact_search_leaf_node_num++;
     } else {
         // printf("%d\n", cur->size);
         approxSearchInterNode(cur, queryTs, sax, k, heap, index_dir,
                             query_reordered, ordering);
+        MyCnt::exact_search_internal_node_num++;
     }
 
     delete queryTs;
@@ -375,6 +379,8 @@ void FADASSearcher::approxSearchInterNode(FADASNode *root, TimeSeries *queryTs, 
         auto duration =
             MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
         MyTimer::exact_search_timecount_us_ += duration.count();
+        MyCnt::exact_search_internal_node_num--;
+        MyCnt::exact_search_leaf_node_num++;
         return;
     }
 
@@ -402,6 +408,7 @@ void FADASSearcher::approxSearchInterNode(FADASNode *root, TimeSeries *queryTs, 
     printf("min_dist: %f\n", min_dist);
     if(node->isInternalNode()){
         approxSearchInterNode(node, queryTs, sax, k, heap, index_dir, query_reordered, ordering);
+        MyCnt::exact_search_internal_node_num++;
         return;
     }else {
       auto start = MyTimer::Now();
@@ -410,6 +417,7 @@ void FADASSearcher::approxSearchInterNode(FADASNode *root, TimeSeries *queryTs, 
       auto duration =
           MyTimer::Duration<std::chrono::microseconds>(start, MyTimer::Now());
       MyTimer::exact_search_timecount_us_ += duration.count();
+      MyCnt::exact_search_leaf_node_num++;
     }
 }
 
@@ -3773,12 +3781,14 @@ void FADASSearcher::approxIncSearchInterNodeFuzzy(FADASNode *root, TimeSeries *q
         } else {
           cur = tmp;
         }
+        MyCnt::exact_search_internal_node_num++;
     }
 
     if(cur!= nullptr){
         if(!cur->isInternalNode()){
             cur->search(k, queryTs, *heap, index_dir, hash_set);
             --node_num;
+            MyCnt::exact_search_leaf_node_num++;
         }else{
             approxIncSearchInterNodeFuzzy(cur, queryTs, sax, k, heap, index_dir, node_num, hash_set);
         }
@@ -3801,6 +3811,7 @@ void FADASSearcher::approxIncSearchInterNodeFuzzy(FADASNode *root, TimeSeries *q
         if(!candidates[i]->isInternalNode()) {
             candidates[i]->search(k, queryTs, *heap, index_dir, hash_set);
             --node_num;
+            MyCnt::exact_search_leaf_node_num++;
         }
         else {
             approxIncSearchInterNodeFuzzy(candidates[i], queryTs, sax, k, heap, index_dir, node_num, hash_set);

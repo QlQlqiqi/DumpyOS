@@ -629,7 +629,7 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
     for(auto &child: children){
         if(child!= nullptr){
           if (child->size > Const::th) {
-            printf("%d\n", child->size);
+            // printf("%d\n", child->size);
             child->growIndexFuzzy(navigating_tbl, g);
           }
           else { // this may be executed many times for the same node, but no

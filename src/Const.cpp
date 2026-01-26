@@ -3,6 +3,8 @@
 //
 #include "../include/Const.h"
 
+int Const::MAX_TOPK = 50;
+
 // sec:expr
 bool Const::debug_is_print_query_answer = false,
      Const::debug_print_node_split_info = false, Const::is_pack_leafnode = true,

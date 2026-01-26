@@ -33,6 +33,10 @@ public:
   static size_t exact_search_item_num;
   // build index 时尝试的 plan 数量
   static size_t try_plan_num_;
+  // search 所遍历的 internal node 数量
+  static size_t exact_search_internal_node_num;
+  // search 所遍历的 leaf node 数量
+  static size_t exact_search_leaf_node_num;
 };
 
 #endif

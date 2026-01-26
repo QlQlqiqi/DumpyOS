@@ -5,12 +5,14 @@
 #ifndef MULGIFT_FILEUTIL_H
 #define MULGIFT_FILEUTIL_H
 #include <string>
+#include <filesystem>
 #include <vector>
 using namespace std;
 
 class FileUtil {
 
 public:
+    static auto CheckFile(const std::string &filename, const size_t &file_sz) -> bool;
     static bool checkFileExists(const char *name);
 
     static void Getfilepath(const char *path, const char *filename, char *filepath);

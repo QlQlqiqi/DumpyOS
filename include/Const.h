@@ -24,6 +24,7 @@ public:
 //    constexpr const static char graphFileName[]{"../data/RowGraph_16_3.bin"};
 //    const static int th = 10000, max_radius = 6, maxK = 100, max_replica = 4;
 //    constexpr const static double boundary_1st = 0.2, boundary = 0.15, filling_factor_1st = 0.8, filling_factor = 0.5;
+    static int MAX_TOPK;
 
     // sec:expr
     static bool debug_is_print_query_answer,debug_print_node_split_info, is_pack_leafnode, is_fuzzy_copy;
@@ -104,7 +105,6 @@ public:
         cout << "ops: " << ops<<endl;
 
         query_num = reader.GetInteger("expr", "query_num", -1);
-        cout << "query_num: " << query_num << endl;
 
         messi_pq_num = reader.GetInteger("expr", "messi_pq_num", -1);
         cout << "messi_pq_num: " << messi_pq_num << endl;
@@ -113,7 +113,6 @@ public:
         cout << "SSD_pq_num: " << SSD_pq_num << endl;
 
         series_num = reader.GetInteger("expr", "series_num", -1);
-        cout << "series_num: " << series_num << endl;
 
         k = reader.GetInteger("expr", "k", -1);
         cout << "k: " << k << endl;
@@ -201,13 +200,19 @@ public:
         cout << "bitsReserve: " << bitsReserve << endl;
 
         tsLength = reader.GetInteger("expr", "tsLength", -1);
-        cout << "tsLength: " << tsLength << endl;
         if(tsLength == -1)  exit(-1);
 
         // rootfn 如果被配置了，那么就以这个为准修改各个 fn
         rootfn = reader.Get("expr", "rootfn", "");
         if (!rootfn.empty()) {
-          configRootfn();
+          if (dataset == "chlorine" || dataset == "stock" || dataset == "gas") {
+            configRootfn();
+          } else if (dataset == "rand") {
+            series_num = 10 * 100 * 10000;
+            tsLength = 256;
+            query_num = 100;
+            configRootfnForDumpyDataset();
+          }
         } else {
           fidxfn = reader.Get(dataset, "fidxfn", "");
           fuzzyidxfn = reader.Get(dataset, "fuzzyidxfn", "");
@@ -222,6 +227,9 @@ public:
           dstreefn = reader.Get(dataset, "dstreefn", "");
           tardisfn = reader.Get(dataset, "tardisfn", "");
         }
+        cout << "query_num: " << query_num << endl;
+        cout << "series_num: " << series_num << endl;
+        cout << "tsLength: " << tsLength << endl;
 
         cout << "fidxfn: " << fidxfn << endl;
         cout << "fuzzyidxfn: " << fuzzyidxfn << endl;
@@ -326,7 +334,7 @@ public:
                 std::to_string(series_num / 1000) + "k_" +
                 std::to_string(segmentNum) + ".bin";
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "%s-%zu-%zu-%zu-query-%d.bin", dataset.data(),
+        sprintf(buf, "%s-%zu-%zu-%zu-query-%d.ivecs", dataset.data(),
                 tag_idx_start, series_num, query_num, tsLength);
         queryfn = rootfn + dataset + "/query/" + std::string(buf);
         memset(buf, 0, sizeof(buf));
@@ -339,6 +347,43 @@ public:
         //         std::to_string(segmentNum) + ".bin";
     }
 
+    static void configRootfnForDumpyDataset() {
+      fidxfn = rootfn + dataset + "/index/";
+      fuzzyidxfn = rootfn + dataset + "/fuzzy/";
+
+      const std::string path = rootfn + dataset;
+      const int M = 100 * 10000;
+      char buf[1024];
+
+      memset(buf, 0, sizeof(buf));
+      sprintf(buf, "/data/%s-%d-%dm.bin", dataset.c_str(), tsLength,
+              series_num / M);
+      datafn = path + std::string(buf);
+
+      memset(buf, 0, sizeof(buf));
+      sprintf(buf, "/paa/%s-%d-%dm.bin", dataset.c_str(), tsLength,
+              series_num / M);
+      paafn = path + std::string(buf);
+
+      memset(buf, 0, sizeof(buf));
+      sprintf(buf, "/sax/%s-%d-%dm-sax-%d.bin", dataset.c_str(), tsLength,
+              series_num / M, segmentNum);
+      saxfn = path + std::string(buf);
+
+      memset(buf, 0, sizeof(buf));
+      sprintf(buf, "/in-memory/%s-%d-%dm.bin", dataset.c_str(), tsLength,
+              series_num / M);
+      idxfn = path + std::string(buf);
+
+      memset(buf, 0, sizeof(buf));
+      sprintf(buf, "/query/%s-%d-q.ivecs", dataset.c_str(), query_num);
+      queryfn = path + std::string(buf);
+
+      memset(buf, 0, sizeof(buf));
+      sprintf(buf, "/res/%s-%d-%dm-groundtruth-%d.ivecs", dataset.c_str(),
+              tsLength, series_num / M, MAX_TOPK);
+      resfn = path + std::string(buf);
+    }
 };
 
 

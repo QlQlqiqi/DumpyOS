@@ -17,6 +17,17 @@
 #include <sys/stat.h>
 #include <cmath>
 
+auto FileUtil::CheckFile(const std::string &filename, const size_t &file_sz) -> bool {
+  if (std::filesystem::exists(filename)) {
+    // 如果这个文件是不完整的，那么视为不存在
+    auto file_size = std::filesystem::file_size(filename.c_str());
+    if (file_size == file_sz) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool FileUtil::checkFileExists(const char *name) {
     ifstream f(name);
     return f.good();
