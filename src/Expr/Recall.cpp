@@ -145,10 +145,14 @@ void reorder_query(float * query_ts, float * query_ts_reordered, int * query_ord
 vector<float *> *Recall::getResult(const string &fn, int queryNo, int k) {
   assert(Const::k == k);
   FILE *f = fopen(fn.c_str(), "rb");
-  long off = (long)queryNo * (Const::MAX_TOPK * sizeof(int));
+  size_t max_k = k;
+  if (Const::dataset_type == 2) {
+    max_k = Const::MAX_TOPK;
+  }
+  long off = (long)queryNo * (max_k * sizeof(uint32_t));
   fseek(f, off, SEEK_SET);
 
-  std::vector<int> res_idxs;
+  std::vector<uint32_t> res_idxs;
   // 先读答案的下标
   //   fread(&res_num, sizeof(int), 1, f);
   //   assert(res_num == k);
@@ -1031,7 +1035,6 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     int thresholds[]{10000};
     cout << fixed  << setprecision(3) << endl;
     float *query;
-    long offset = 0;
     // todo(QlQlqiqi): 尚未适配
     assert(!Const::read_file_while_search);
     int query_num = Const::query_num;
@@ -1046,11 +1049,18 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
     std::vector<std::vector<float>> querys(
         query_num, std::vector<float>(Const::tsLength, 0));
     for (int i = 0; i < query_num; i++) {
-      auto query_idx = query_idxs[i];   
+      auto query_idx = query_idxs[i];
       fseek(data_infile, query_idx * Const::tsLengthBytes, SEEK_SET);
       FileUtil::readSeries(data_infile, querys[i].data());
+    //   printf("-------------------\n");
+    //   printf("%d: ", i);
+    //   for (int j = 0; j < Const::tsLength; j++) {
+    //     printf("%.2f, ", querys[i][j]);
+    //   }
+    //   printf("\n");
     }
     fclose(data_infile);
+
 
     for(int threshold:thresholds){
         int _k = 0;
@@ -1087,7 +1097,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 auto end = MyTimer::Now();
 //                for(int i=0;i<256;++i)
 //                    cout << (*approxKnn)[0]->ts[i] <<",";
-                vector<float*>* exactKnn = getResult(Const::resfn, offset + curRound, k);
+                vector<float*>* exactKnn = getResult(Const::resfn, curRound, k);
                 vector<PqItemSeries*> exactKnn2;
                 for(float *t: *exactKnn)
                     exactKnn2.push_back(new PqItemSeries(t, query));
