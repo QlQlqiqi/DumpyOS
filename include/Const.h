@@ -220,8 +220,7 @@ public:
       } else {
         dataset_type = 2;
         if (dataset == "rand-10k") {
-          // th = 500;
-          th = 10000;
+          th = 500;
           series_num = 10000;
           tsLength = 256;
           query_num = 100;
