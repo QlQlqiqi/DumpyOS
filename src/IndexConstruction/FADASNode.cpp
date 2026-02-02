@@ -2647,6 +2647,14 @@ FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
     Const::logPrint("build index successfully!");
     delete[] saxes;
     auto end_t = chrono::system_clock::now();
+    auto choose_seg_timecount_ms = MyTimer::choose_seg_timecount_us_ / 1000;
+    printf("Total time cost of choosing segment is %zums and total number of "
+           "plan "
+           "is %zu. (%.2fms per plan)\n",
+           choose_seg_timecount_ms, MyCnt::try_plan_num_,
+           MyCnt::try_plan_num_ == 0
+               ? 0
+               : choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
     cout << "Total time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
     cout << "Building sax and paa total time is "<<SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
     << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;
@@ -3113,7 +3121,13 @@ void FADASNode::growIndex(unsigned short *node_saxes, bool need_free) {
 //    int chosen_num = SaxUtil::findFirstGE(power_2, 1, Const::segmentNum + 1, size / Const::th + 1);
 //    SAX_INFO* sax_info = statSAX();
 //    chooseSegment(sax_info, chosen_num);
-    determineSegments(node_saxes);
+    {
+      auto now = MyTimer::Now();
+      determineSegments(node_saxes);
+      auto duration =
+          MyTimer::Duration<std::chrono::microseconds>(now, MyTimer::Now());
+      MyTimer::choose_seg_timecount_us_ += duration.count();
+    }
     int chosen_num = chosenSegments.size();
     // statistic children information in order to partition
     partUnit nodes[1<<chosen_num];
@@ -3466,7 +3480,13 @@ void FADASNode::growIndex(){
 //    int chosen_num = SaxUtil::findFirstGE(power_2, 1, Const::segmentNum + 1, size / Const::th + 1);
 //    SAX_INFO* sax_info = statSAX();
 //    chooseSegment(sax_info, chosen_num);
-    determineSegments();
+    {
+      auto now = MyTimer::Now();
+      determineSegments();
+      auto duration =
+          MyTimer::Duration<std::chrono::microseconds>(now, MyTimer::Now());
+      MyTimer::choose_seg_timecount_us_ += duration.count();
+    }
     int chosen_num = chosenSegments.size();
     // statistic children information in order to partition
     partUnit nodes[1<<chosen_num];
@@ -4079,8 +4099,9 @@ void FADASNode::determineSegmentsNaive() {
 // determine fan-out and choose segments
 void FADASNode::determineSegments() {
     switch(Const::simulate_type) {
-        case 0: {
-            // Dumpy
+        case 0:
+        case 3: {
+            // Dumpy 和 Dumpy-Fuuzy
             determineSegmentsDumpy();
             break;
         }
@@ -4199,7 +4220,7 @@ void FADASNode::determineSegmentsTardis() {
         chosenSegments.emplace_back(i);
       }
     }
-    MyCnt::try_plan_num_++;
+    MyCnt::try_plan_num_ += Const::segmentNum;
 }
 
 void FADASNode::determineSegmentsISAX2plus() {

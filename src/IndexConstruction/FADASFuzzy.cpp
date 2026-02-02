@@ -254,7 +254,6 @@ void FADASNode::setPartition(FADASNode *childrenList[],
 }
 
 FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & saxfn, const string &paafn, vector<vector<int>>* g){
-    auto start_t = chrono::system_clock::now();
     FileUtil::checkDirClean(Const::fuzzyidxfn.c_str());
     Const::logPrint("start building index.");
     loadCombines();
@@ -266,6 +265,7 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     auto start = chrono::system_clock::now();
     SAX_PAA_TOTAL_TIME += chrono::duration_cast<chrono::microseconds>(start - end).count();
 
+    auto start_t = chrono::system_clock::now();
     mask = MathUtil::generateMask(Const::segmentNum);
     auto* root = new FADASNode();
     root->id = 0;
@@ -358,7 +358,7 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     start = chrono::system_clock::now();
     FUZZY_CPU_TIME_1st = chrono::duration_cast<chrono::microseconds>(start - end).count();
 
-    thread IO(materialize1stLayerFuzzy, datafn, root, navids, Const::fuzzyidxfn, &FLNT);
+    // thread IO(materialize1stLayerFuzzy, datafn, root, navids, Const::fuzzyidxfn, &FLNT);
 
     Const::logPrint("1st layer fuzzy number is " + to_string(fuzzy_num));
 
@@ -399,7 +399,9 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
     GROW_TOTAL_TIME += chrono::duration_cast<chrono::microseconds>(end - start).count();
     Const::logPrint("build index skeleton finished.");
 
-    IO.join();
+    materialize1stLayerFuzzy(datafn, root, navids, Const::fuzzyidxfn, &FLNT);
+
+    // IO.join();
     // navids have been deleted in the process of materializing the 1st layer
     root->setPartition(childrenList, nodeIn1stLayer);
 
@@ -434,9 +436,9 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
            MyCnt::try_plan_num_ == 0
                ? 0
                : choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
-    cout << "Total time cost of spliting node is "
-         << MyTimer::node_split_us / 1000 << "ms." << endl;
-    cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
+    // cout << "Total time cost of spliting node is "
+    //      << MyTimer::node_split_us / 1000 << "ms." << endl;
+    // cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
     cout << "Building sax and paa total time is " << SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
         << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;
 
@@ -614,10 +616,8 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
     GROW_CPU_TIME += chrono::duration_cast<chrono::microseconds>(end - start).count();
 
     // note that for internal nodes, tbl stores all series index list inside while for leaf nodes, only fuzzy series index list are in the tbl
-    if (Const::is_fuzzy_copy) {
-      fuzzy(nodes, node_actual_size, node_offsets, series_index_list,
-            chosen_num, navigating_tbl);
-    }
+    fuzzy(nodes, node_actual_size, node_offsets, series_index_list, chosen_num,
+          navigating_tbl);
     start = chrono::system_clock::now();
     FUZZY_CPU_TIME += chrono::duration_cast<chrono::microseconds>(start - end).count();
 

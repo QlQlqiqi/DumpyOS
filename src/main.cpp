@@ -837,20 +837,32 @@ void statIndexFADASFuzzy(){
 int main(int argc, char **argv) {
     Const::readConfig();
     if(argc == 2) {
+      if (Const::simulate_type == 0) {
+        // Dumpy
+        Const::index = 1;
+        Const::materialized = 1;
+        if (strcmp(argv[1], "build") == 0) {
+          Const::ops = 0;
+        } else if (strcmp(argv[1], "search") == 0) {
+          Const::ops = 1;
+        }
+      } else if (Const::simulate_type == 3) {
+        // Dumpy-Fuzzy
         Const::index = 2;
         Const::materialized = 1;
-        if(strcmp(argv[1], "build") == 0) {
-            Const::ops = 0;
-        } else if(strcmp(argv[1], "search") == 0) {
-            Const::ops = 1;
+        if (strcmp(argv[1], "build") == 0) {
+          Const::ops = 0;
+        } else if (strcmp(argv[1], "search") == 0) {
+          Const::ops = 1;
         } else if (strcmp(argv[1], "inc-search") == 0) {
           Const::ops = 2;
         }
+      }
     }
 
     // generateQueryFile();
-    // generateSax();
-    // generatePaa();
+    generateSax();
+    generatePaa();
     // generateGroundTruth();
 
     switch (Const::index) {
@@ -864,8 +876,11 @@ int main(int argc, char **argv) {
                 case 0:
                     if (Const::materialized == 0)
                         buildIPGandPartition();
-                    else
-                        buildFADAS();
+                    else {
+                    //   generateSax();
+                    //   generatePaa();
+                      buildFADAS();
+                    }
                     break;
                 case 1:
                     if(Const::materialized == 0)
@@ -943,8 +958,8 @@ int main(int argc, char **argv) {
                 buildIPGFuzzy();
               } else {
                 // generateQueryFile();
-                generateSax();
-                generatePaa();
+                // generateSax();
+                // generatePaa();
                 // generateGroundTruth();
                 buildFADASFuzzy();
               }

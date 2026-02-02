@@ -28,7 +28,7 @@ public:
 
   // sec:expr
   static bool debug_is_print_query_answer, debug_print_node_split_info,
-      is_pack_leafnode, is_fuzzy_copy;
+      is_pack_leafnode;
   static string rootfn;
   static string dataset, method;
   static int simulate_type, tsLength, maxK, index, ops, materialized,
@@ -74,8 +74,6 @@ public:
 
     simulate_type = reader.GetInteger("expr", "simulate_type", 0);
     cout << "simulate_type: " << simulate_type << endl;
-    assert(simulate_type >= 0);
-    assert(simulate_type <= 2);
 
     debug_is_print_query_answer =
         reader.GetBoolean("expr", "debug_is_print_query_answer", false);
@@ -89,9 +87,6 @@ public:
 
     is_pack_leafnode = reader.GetBoolean("expr", "is_pack_leafnode", true);
     cout << "is_pack_leafnode: " << is_pack_leafnode << endl;
-
-    is_fuzzy_copy = reader.GetBoolean("expr", "is_fuzzy_copy", true);
-    cout << "is_fuzzy_copy: " << is_fuzzy_copy << endl;
 
     dataset = reader.Get("expr", "dataset", "");
     cout << "dataset: " << dataset << endl;
@@ -230,6 +225,24 @@ public:
           tsLength = 256;
           query_num = 100;
           th = 10000;
+          configRootfnForDumpyDataset();
+        } else if (dataset == "deep") {
+          series_num = 10 * 100 * 10000;
+          th = 10000;
+          tsLength = 96;
+          query_num = 100;
+          configRootfnForDumpyDataset();
+        } else if (dataset == "dna") {
+          series_num = 3 * 100 * 10000;
+          th = 10000;
+          tsLength = 1024;
+          query_num = 100;
+          configRootfnForDumpyDataset();
+        } else if (dataset == "ecg") {
+          series_num = 10 * 100 * 10000;
+          th = 10000;
+          tsLength = 320;
+          query_num = 100;
           configRootfnForDumpyDataset();
         } else {
           assert(false);
