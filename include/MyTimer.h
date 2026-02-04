@@ -3,6 +3,8 @@
 
 #include <chrono>
 #include <cstddef>
+#include <utility>
+#include <unordered_map>
 
 // 主要是计算各个部分的时间
 class MyTimer {
@@ -37,6 +39,8 @@ public:
   static size_t exact_search_internal_node_num;
   // search 所遍历的 leaf node 数量
   static size_t exact_search_leaf_node_num;
+  // 每个节点划分方案中片段数量
+  static std::unordered_map<size_t, size_t> plan_seg_nums_;
 };
 
 #endif

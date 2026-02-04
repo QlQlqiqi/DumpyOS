@@ -10,11 +10,11 @@ create_dir() {
 
     # 1. 创建普通目录
     mkdir -p "${dataset}"
-    mkdir -p "${dataset}/in-memory"
+    # mkdir -p "${dataset}/in-memory"
     mkdir -p "${dataset}/paa"
     mkdir -p "${dataset}/sax"
-    mkdir -p "${dataset}/index"
-    mkdir -p "${dataset}/fuzzy"
+    # mkdir -p "${dataset}/index"
+    # mkdir -p "${dataset}/fuzzy"
 
     # 2. 创建软连接目录 (data, query, res)
     # 逻辑：将远程的目录链接到当前执行路径下的子目录中

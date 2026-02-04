@@ -166,7 +166,7 @@ vector<float *> *Recall::getResult(const string &fn, int queryNo, int k) {
   //   printf("query idx: %d\n", queryNo);
   for (int i = 0; i < k; ++i) {
     // printf("answer idx: %d, ", res_idxs[i]);
-    size_t off = Const::tsLengthBytes * res_idxs[i];
+    size_t off = (size_t)Const::tsLengthBytes * res_idxs[i];
     fseek(data_f, off, SEEK_SET);
     auto *ts = new float[Const::tsLength];
     fread(ts, sizeof(float), Const::tsLength, data_f);
@@ -1097,10 +1097,27 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 auto end = MyTimer::Now();
 //                for(int i=0;i<256;++i)
 //                    cout << (*approxKnn)[0]->ts[i] <<",";
+                // printf("-------------------------\n");
+                // for (int j = 0; j < Const::tsLength; j++) {
+                //   printf("%f, ", query[j]);
+                // }
+                // printf("\n");
+                // printf("-------------------------\n");
                 vector<float*>* exactKnn = getResult(Const::resfn, curRound, k);
                 vector<PqItemSeries*> exactKnn2;
-                for(float *t: *exactKnn)
-                    exactKnn2.push_back(new PqItemSeries(t, query));
+                // size_t ts_idx = 0;
+                for (float *t : *exactKnn) {
+                //   printf("%zu\n", ts_idx++);
+                //   for (int j = 0; j < Const::tsLength; j++) {
+                //     printf("%f, ", t[j]);
+                //   }
+                //   printf("\n");
+                  exactKnn2.push_back(new PqItemSeries(t, query));
+                }
+
+                for (size_t i = 0; i < exactKnn2.size() - 1; i++) {
+                  assert(exactKnn2[i]->dist <= exactKnn2[i + 1]->dist);
+                }
 
                 duration[curRound] = chrono::duration_cast<chrono::microseconds>(end - start).count();
                 layers[curRound] = layer;

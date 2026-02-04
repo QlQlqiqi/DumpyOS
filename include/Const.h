@@ -57,8 +57,9 @@ public:
 
   // 2-nd level parameter
 
-  static int tsLengthPerSegment, cardinality, tsLengthBytes, vertexNum,
+  static int tsLengthPerSegment, cardinality,  vertexNum,
       neighborNum;
+  static size_t tsLengthBytes;
   static long offset;
 
   // 和 similar-search 相同
@@ -215,7 +216,7 @@ public:
       } else {
         dataset_type = 2;
         if (dataset == "rand-10k") {
-          th = 500;
+          th = 10;
           series_num = 10000;
           tsLength = 256;
           query_num = 100;
@@ -224,23 +225,23 @@ public:
           series_num = 10 * 100 * 10000;
           tsLength = 256;
           query_num = 100;
-          th = 10000;
+          th = 1000;
           configRootfnForDumpyDataset();
         } else if (dataset == "deep") {
           series_num = 10 * 100 * 10000;
-          th = 10000;
+          th = 1000;
           tsLength = 96;
           query_num = 100;
           configRootfnForDumpyDataset();
         } else if (dataset == "dna") {
           series_num = 3 * 100 * 10000;
-          th = 10000;
+          th = 1000;
           tsLength = 1024;
           query_num = 100;
           configRootfnForDumpyDataset();
         } else if (dataset == "ecg") {
           series_num = 10 * 100 * 10000;
-          th = 10000;
+          th = 1000;
           tsLength = 320;
           query_num = 100;
           configRootfnForDumpyDataset();
@@ -384,8 +385,8 @@ public:
   }
 
   static void configRootfnForDumpyDataset() {
-    fidxfn = rootfn + dataset + "/index/";
-    fuzzyidxfn = rootfn + dataset + "/fuzzy/";
+    fidxfn = rootfn + "index/";
+    fuzzyidxfn = rootfn + "fuzzy/";
 
     const std::string path = rootfn + dataset;
     const int K = 1000;
@@ -417,9 +418,9 @@ public:
     saxfn = path + std::string(buf);
 
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, "/in-memory/%s-%d-%s.bin", dataset.c_str(), tsLength,
+    sprintf(buf, "in-memory/%s-%d-%s.bin", dataset.c_str(), tsLength,
             num_suffix.c_str());
-    idxfn = path + std::string(buf);
+    idxfn = rootfn + std::string(buf);
 
     memset(buf, 0, sizeof(buf));
     sprintf(buf, "/query/%s-%d-q.ivecs", dataset.c_str(), query_num);

@@ -2655,6 +2655,16 @@ FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
            MyCnt::try_plan_num_ == 0
                ? 0
                : choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
+    printf("segment num of node-split-plan is: ");
+    auto plan_seg_num_kv = std::make_pair<size_t, size_t>(0, 0);
+    for (int i = 1; i <= Const::segmentNum; i++) {
+      auto num = MyCnt::plan_seg_nums_[i];
+      printf("<%d, %zu>, ", i, num);
+      plan_seg_num_kv.first += num;
+      plan_seg_num_kv.second++;
+    }
+    printf(" and average is: %.2f\n",
+           plan_seg_num_kv.first * 1.0 / plan_seg_num_kv.second);
     cout << "Total time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
     cout << "Building sax and paa total time is "<<SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
     << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;
@@ -3488,6 +3498,7 @@ void FADASNode::growIndex(){
       MyTimer::choose_seg_timecount_us_ += duration.count();
     }
     int chosen_num = chosenSegments.size();
+    MyCnt::plan_seg_nums_[chosen_num]++;
     // statistic children information in order to partition
     partUnit nodes[1<<chosen_num];
     for(int i=0;i<(1<<chosen_num);++i)

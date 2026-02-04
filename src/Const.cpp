@@ -43,5 +43,6 @@ string Const::paafn = "", Const::saxfn = "", Const::idxfn = "",
 // 2-nd level parameter
 
 int Const::tsLengthPerSegment = -1, Const::cardinality = -1,
-    Const::tsLengthBytes = -1, Const::vertexNum = -1, Const::neighborNum = 0;
+    Const::vertexNum = -1, Const::neighborNum = 0;
+size_t Const::tsLengthBytes = -1;
 long Const::offset = -1;

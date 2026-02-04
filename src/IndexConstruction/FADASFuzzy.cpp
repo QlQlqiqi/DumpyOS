@@ -436,6 +436,16 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
            MyCnt::try_plan_num_ == 0
                ? 0
                : choose_seg_timecount_ms * 1.0 / MyCnt::try_plan_num_);
+    printf("segment num of node-split-plan is: ");
+    auto plan_seg_num_kv = std::make_pair<size_t, size_t>(0, 0);
+    for (int i = 1; i <= Const::segmentNum; i++) {
+      auto num = MyCnt::plan_seg_nums_[i];
+      printf("<%d, %zu>, ", i, num);
+      plan_seg_num_kv.first += num;
+      plan_seg_num_kv.second++;
+    }
+    printf(" and average is: %.2f\n",
+           plan_seg_num_kv.first * 1.0 / plan_seg_num_kv.second);
     // cout << "Total time cost of spliting node is "
     //      << MyTimer::node_split_us / 1000 << "ms." << endl;
     // cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
@@ -533,6 +543,8 @@ void FADASNode::growIndexFuzzy(unordered_map<FADASNode *, NODE_RECORDER> &naviga
     if (Const::simulate_type == 1 || Const::simulate_type == 2) {
       chosen_num = chosenSegments.size();
     }
+
+    MyCnt::plan_seg_nums_[chosen_num]++;
 
     // 如果不能划分了，则放弃
     // if (chosen_num == 0 || chosenSegments.empty()) {

@@ -835,6 +835,16 @@ void statIndexFADASFuzzy(){
 }
 
 int main(int argc, char **argv) {
+    auto rm_func = [&](){
+        // 删除原本索引
+        for (const auto &entry : std::filesystem::directory_iterator(Const::fidxfn)) {
+        std::filesystem::remove_all(entry.path());
+        }
+        for (const auto &entry : std::filesystem::directory_iterator(Const::fuzzyidxfn)) {
+        std::filesystem::remove_all(entry.path());
+        }
+    };
+
     Const::readConfig();
     if(argc == 2) {
       if (Const::simulate_type == 0) {
@@ -842,6 +852,7 @@ int main(int argc, char **argv) {
         Const::index = 1;
         Const::materialized = 1;
         if (strcmp(argv[1], "build") == 0) {
+          rm_func();
           Const::ops = 0;
         } else if (strcmp(argv[1], "search") == 0) {
           Const::ops = 1;
@@ -851,6 +862,7 @@ int main(int argc, char **argv) {
         Const::index = 2;
         Const::materialized = 1;
         if (strcmp(argv[1], "build") == 0) {
+          rm_func();
           Const::ops = 0;
         } else if (strcmp(argv[1], "search") == 0) {
           Const::ops = 1;
@@ -859,6 +871,8 @@ int main(int argc, char **argv) {
         }
       }
     }
+
+
 
     // generateQueryFile();
     generateSax();
