@@ -448,7 +448,7 @@ FADASNode*  FADASNode::BuildIndexFuzzy(const string & datafn, const string & sax
            plan_seg_num_kv.first * 1.0 / plan_seg_num_kv.second);
     // cout << "Total time cost of spliting node is "
     //      << MyTimer::node_split_us / 1000 << "ms." << endl;
-    // cout << "Total building time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
+    cout << "Total time is " << chrono::duration_cast<chrono::microseconds>(end_t - start_t).count() / 1000 << "ms."<<endl;
     cout << "Building sax and paa total time is " << SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
         << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;
 

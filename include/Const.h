@@ -216,7 +216,7 @@ public:
       } else {
         dataset_type = 2;
         if (dataset == "rand-10k") {
-          th = 10;
+          th = 100;
           series_num = 10000;
           tsLength = 256;
           query_num = 100;

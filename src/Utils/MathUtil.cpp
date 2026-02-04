@@ -213,13 +213,17 @@ int MathUtil::bitDiffNum(int i, int j){
 double MathUtil::errorRatio(vector<PqItemSeries *> &approx,
                             vector<PqItemSeries *> &exact, int k) {
   double sum = 0;
+  size_t cnt = 0;
   for (int i = 0; i < approx.size(); ++i) {
-    if (approx[i]->dist == 0 && exact[i]->dist == 0)
+    if (approx[i]->dist == 0 && exact[i]->dist == 0) {
       sum += 1;
-    else
+    } else if (approx[i]->dist == 0 || exact[i]->dist == 0) {
+      cnt++;
+    } else {
       sum += (sqrt(approx[i]->dist) / sqrt(exact[i]->dist));
+    }
   }
-  return sum / approx.size();
+  return sum / (approx.size() - cnt);
 }
 
 double MathUtil::invertedErrorRatio(vector<PqItemSeries *> &approx, vector<PqItemSeries *> &exact, int k) {

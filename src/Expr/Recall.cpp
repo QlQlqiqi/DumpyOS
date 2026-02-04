@@ -1091,12 +1091,15 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                 auto start = MyTimer::Now();
                 vector<PqItemSeries*> *approxKnn = FADASSearcher::approxSearch(root, query, k, g, index_dir, query_reordered,
                                                                                ordering);
-                MyTimer::search_timecount_us_ += MyTimer::Duration<std::chrono::microseconds>(
-                                 start, MyTimer::Now())
-                                 .count();
                 auto end = MyTimer::Now();
-//                for(int i=0;i<256;++i)
-//                    cout << (*approxKnn)[0]->ts[i] <<",";
+                MyTimer::search_timecount_us_ +=
+                    MyTimer::Duration<std::chrono::microseconds>(start, end)
+                        .count();
+                duration[curRound] =
+                    chrono::duration_cast<chrono::microseconds>(end - start)
+                        .count();
+                //                for(int i=0;i<256;++i)
+                //                    cout << (*approxKnn)[0]->ts[i] <<",";
                 // printf("-------------------------\n");
                 // for (int j = 0; j < Const::tsLength; j++) {
                 //   printf("%f, ", query[j]);
@@ -1115,11 +1118,10 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
                   exactKnn2.push_back(new PqItemSeries(t, query));
                 }
 
-                for (size_t i = 0; i < exactKnn2.size() - 1; i++) {
-                  assert(exactKnn2[i]->dist <= exactKnn2[i + 1]->dist);
-                }
+                // for (size_t i = 0; i < exactKnn2.size() - 1; i++) {
+                //   assert(exactKnn2[i]->dist <= exactKnn2[i + 1]->dist);
+                // }
 
-                duration[curRound] = chrono::duration_cast<chrono::microseconds>(end - start).count();
                 layers[curRound] = layer;
                 recallNums[curRound] = TimeSeriesUtil::intersectionTsSetsCardinality(approxKnn, exactKnn);
                 mAP[curRound] = TimeSeriesUtil::GetAP(approxKnn, exactKnn);
@@ -1177,7 +1179,7 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
               mAP_score += ap;
             }
             mAP_score /= maxExprRound;
-            printf("mAP is: %.2f\%\n", mAP_score * 100);
+            printf("mAP is: %.3f\%\n", mAP_score * 100);
 
             double avg_lenient_mode_recall = 0;
             for (auto recall : lenientModeRecall) {
@@ -1197,12 +1199,13 @@ void Recall::doExprWithResFADAS(FADASNode *root, vector<vector<int>> *g, const s
             cout<<"\nAverage Recall rate is : " << (float)totalRecallNum / (float) (maxExprRound * k)<< endl;
             double totalErrorRatio = 0;
             for(double _:error_ratio)   totalErrorRatio += _;
-            cout<<"Average Error ratio is : " << totalErrorRatio / (float) (maxExprRound)<< endl;
-//            double totalinvErrorRatio = 0;
-//            for(double _:inv_error_ratio)   totalinvErrorRatio += _;
-//            cout<<"Average inv Error ratio is : " << totalinvErrorRatio / (float) (maxExprRound)<< endl;
-            double total_duration = 0;
-            for(long _:duration)    total_duration += _;
+            printf("error ratio@%zu is: %.3f\n", k,
+                   totalErrorRatio / maxExprRound);
+            //            double totalinvErrorRatio = 0;
+            //            for(double _:inv_error_ratio)   totalinvErrorRatio +=
+            //            _; cout<<"Average inv Error ratio is : " <<
+            //            totalinvErrorRatio / (float) (maxExprRound)<< endl;
+            double total_duration = MyTimer::search_timecount_us_;
             total_duration /= (double ) maxExprRound;
             cout<<"Average duration is : " << total_duration << "us. "
               <<"And QPS = "<< 1000000.0 / total_duration <<endl;

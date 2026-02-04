@@ -2594,7 +2594,7 @@ FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
     FADASNode* childrenList[partNum];
     for(int i=0;i<partNum;++i)  childrenList[i] = new FADASNode(1, i);
     root->children.resize(Const::vertexNum);
-    for(int i=0;i<Const::vertexNum;++i){
+    for(int i=0;i<Const::vertexNum;++i){    
         if(nodeIn1stLayer[i].size <= 0) continue;
         if(nodeIn1stLayer[i].size > Const::th) {
 //            assert(nodeIn1stLayer[i].size > Const::th);
