@@ -1807,7 +1807,7 @@ void Recall::doExprWithResIncFADASFuzzy(FADASNode *root, vector<vector<int>> *g,
             auto end = MyTimer::Now();
             //                for(int i=0;i<256;++i)
             //                    cout << (*approxKnn)[0]->ts[i] <<",";
-            vector<float*>* exactKnn = getResult(Const::resfn, offset + curRound, k);
+            vector<float*>* exactKnn = getResult(Const::resfn, curRound, k);
             vector<PqItemSeries*> exactKnn2;
             for(float *t: *exactKnn)
                 exactKnn2.push_back(new PqItemSeries(t, query));

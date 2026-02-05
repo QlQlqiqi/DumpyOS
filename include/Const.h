@@ -57,8 +57,7 @@ public:
 
   // 2-nd level parameter
 
-  static int tsLengthPerSegment, cardinality,  vertexNum,
-      neighborNum;
+  static int tsLengthPerSegment, cardinality, vertexNum, neighborNum;
   static size_t tsLengthBytes;
   static long offset;
 
@@ -224,6 +223,12 @@ public:
         } else if (dataset == "rand") {
           series_num = 10 * 100 * 10000;
           tsLength = 256;
+          query_num = 100;
+          th = 1000;
+          configRootfnForDumpyDataset();
+        } else if (dataset == "rand-tmp") {
+          // series_num = 2 * 100 * 10000;
+          // tsLength = 256;
           query_num = 100;
           th = 1000;
           configRootfnForDumpyDataset();
@@ -430,6 +435,16 @@ public:
     sprintf(buf, "/res/%s-%d-%s-groundtruth-%d.ivecs", dataset.c_str(),
             tsLength, num_suffix.c_str(), MAX_TOPK);
     resfn = path + std::string(buf);
+
+    // 特殊数据集
+    if (dataset == "rand-tmp") {
+      datafn = path + "/data/rand-tmp.bin";
+      paafn = path + "/paa/rand-tmp-paa.bin";
+      saxfn = path + "/sax/rand-tmp-sax.bin";
+      idxfn = rootfn + "in-memory/rand-tmp.bin";
+      queryfn = path + "/query/rand-tmp-100-q.ivecs";
+      resfn = path + "/res/rand-tmp-groundtruth-50.ivecs";
+    }
   }
 };
 

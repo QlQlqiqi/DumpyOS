@@ -2556,7 +2556,6 @@ void materializeInterNodePos(FADASNode *node, unsigned short *saxes) {
 
 FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
     Const::logPrint("Start building index.");
-    auto start_t = chrono::system_clock::now();
     loadCombines();
     FileUtil::checkDirClean(Const::fidxfn.c_str());
     auto end = chrono::system_clock::now();
@@ -2567,6 +2566,7 @@ FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
     Const::logPrint("Finish building sax table.");
     SAX_PAA_TOTAL_TIME += chrono::duration_cast<chrono::microseconds>(start - end).count();
 
+    auto start_t = chrono::system_clock::now();
     auto* root = new FADASNode();
     root->size = series_num;
     for(int &i:root->bits_cardinality)  i=0;
