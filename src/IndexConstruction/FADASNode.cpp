@@ -2669,18 +2669,28 @@ FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
     cout << "Building sax and paa total time is "<<SAX_PAA_TOTAL_TIME / 1000 <<"ms, cpu time is "
     << SAX_PAA_CPU_TIME / 1000 <<"ms, I/O read time is " << SAX_PAA_READ_TIME / 1000 << "ms."<<endl;
 
+    size_t cpu_cost_us = 0;
+    size_t io_read_cost_us = 0;
+    size_t io_write_cost_us = 0;
+
     cout << "During the process of building 1st layer index structure, CPU time is "<< GROW_CPU_TIME_1st / 1000 <<"ms, "<<endl;
+    cpu_cost_us += GROW_CPU_TIME_1st;
 
     cout << "During the process of materializing 1st layer nodes, total time is "<< MAT1_TOTAL_TIME / 1000
          <<"ms, I/O read time is "<< MAT1_READ_TIME / 1000 <<"ms, CPU statistic time  is " << MAT1_CPU_TIME_STAT / 1000
          << "ms, CPU copy Time is " << MAT1_CPU_TIME_COPY / 1000 << "ms, while I/O write time  is " << MAT1_WRITE_TIME / 1000 << "ms. "<< endl;
+    io_read_cost_us += MAT1_READ_TIME;
+    io_write_cost_us += MAT1_WRITE_TIME;
 
     cout << "During the process of growing index structure, total time is "<< GROW_TOTAL_TIME / 1000
         <<"ms, other CPU time is "<< GROW_CPU_TIME / 1000 <<"ms."<<endl;
+    cpu_cost_us += GROW_TOTAL_TIME;
 
     cout << "During the process of materializing internal nodes, total time is "<<MAT2_TOTAL_TIME / 1000
          <<"ms, I/O read time is "<<MAT2_READ_TIME / 1000 <<"ms, CPU time is " << MAT2_CPU_TIME / 1000
          << "ms, while I/O write time is " << MAT2_WRITE_TIME / 1000 << "ms." << endl;
+    io_read_cost_us += MAT2_READ_TIME;
+    io_write_cost_us += MAT2_WRITE_TIME;
 
     cout << "write sax needs " << SAX_WRITE_TIME / 1000 << "ms" << endl;
 
@@ -2697,6 +2707,12 @@ FADASNode *FADASNode::BuildIndex(string &datafn, string &saxfn) {
     cout << "Output needs" << output_time << " mins" <<endl
     <<"Input needs" << input_time << " mins"<<endl
     <<"CPU needs" << cpu_time << "mins"<<endl;
+
+    cout << "=================================" << endl;
+    printf("CPU Cost: %.3fs.\nI/O Read Cost: %.3fs.\nI/O Write Cost: %.3fs.\n",
+           cpu_cost_us / 1000000.0, io_read_cost_us / 1000000.0,
+           io_write_cost_us / 1000000.0);
+    cout << "=================================" << endl;
 
     root->getIndexStats();
 

@@ -227,8 +227,8 @@ public:
           th = 1000;
           configRootfnForDumpyDataset();
         } else if (dataset == "rand-tmp") {
-          // series_num = 2 * 100 * 10000;
-          // tsLength = 256;
+          series_num = 8 * 100 * 10000;
+          tsLength = 256;
           query_num = 100;
           th = 1000;
           configRootfnForDumpyDataset();
